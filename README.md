@@ -15,7 +15,7 @@ It's built with **Next.js 16** (App Router) and **Payload CMS 3.82**, with Postg
 Requirements: **Node 24.22+**, **pnpm 10**, and a Postgres database (a local install, Docker, or a free Neon database).
 
 ```bash
-cp .env.example .env          # then fill in POSTGRES_URL and PAYLOAD_SECRET
+cp .env.example .env          # then fill in POSTGRES_URL (or DATABASE_URL) and PAYLOAD_SECRET
 pnpm install
 pnpm dev                      # http://localhost:3000  ·  admin at /admin
 ```
@@ -31,7 +31,7 @@ In local development, Payload updates the database schema automatically. Product
 ## Deploying to Vercel
 
 1. Push this repo to GitHub and import it in Vercel.
-2. In the Vercel project, add **Storage → Postgres (Neon)** and **Storage → Blob**. These set `POSTGRES_URL` and `BLOB_READ_WRITE_TOKEN` for you.
+2. In the Vercel project, add **Storage → Neon (Postgres)** and **Storage → Blob**. These set `DATABASE_URL` and `BLOB_READ_WRITE_TOKEN` for you (the app also accepts `POSTGRES_URL`).
 3. Add environment variables:
    - `PAYLOAD_SECRET`: a long random string (`openssl rand -hex 32`)
    - `NEXT_PUBLIC_SITE_URL`: the live URL, e.g. `https://farefarms.ca`
