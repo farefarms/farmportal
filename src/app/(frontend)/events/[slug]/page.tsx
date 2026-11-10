@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import type { CSSProperties } from 'react'
 
 import { RegisterForm } from '@/components/forms/Forms'
 import { JsonLd } from '@/components/JsonLd'
 import { RichText } from '@/components/RichText'
-import { CalendarPlusIcon, ClockIcon, Eyebrow, PinIcon } from '@/components/ui'
+import { Btn, Icon, PageHero } from '@/components/ui'
 import { fullDate, isPast, timeRange } from '@/lib/format'
 import { getEvent } from '@/lib/queries'
 import { absoluteUrl, EVENT_CATEGORY_LABELS } from '@/lib/site'
@@ -28,6 +29,7 @@ export default async function EventPage({ params }: { params: Params }) {
   const past = isPast(event)
   const closesAt = event.registration?.closesAt ? new Date(event.registration.closesAt) : null
   const open = !past && event.status === 'scheduled' && event.registration?.enabled !== false && !(closesAt && closesAt < new Date())
+  const status = event.status === 'cancelled' ? ' · Cancelled' : event.status === 'postponed' ? ' · Postponed' : past ? ' · Past event' : ''
 
   return (
     <article>
@@ -51,40 +53,45 @@ export default async function EventPage({ params }: { params: Params }) {
           url: absoluteUrl(`/events/${event.slug}`),
         }}
       />
-      <header className="theme-forest">
-        <div className="container stack" style={{ paddingBlock: 'clamp(40px, 5vw, 72px)', gap: 18 }}>
-          <nav aria-label="Breadcrumb" className="breadcrumb">
-            <ol style={{ color: 'rgba(244,237,225,0.8)' }}>
-              <li><Link href="/events" style={{ color: 'var(--marigold)' }}>Events</Link></li>
-              <li aria-hidden="true">/</li>
-              <li aria-current="page">{event.title}</li>
-            </ol>
-          </nav>
-          <Eyebrow>
-            {EVENT_CATEGORY_LABELS[event.category] ?? event.category}
-            {event.status === 'cancelled' ? ' · Cancelled' : event.status === 'postponed' ? ' · Postponed' : past ? ' · Past event' : ''}
-          </Eyebrow>
-          <h1 className="h1" style={{ marginTop: -8, maxWidth: 960 }}>{event.title}</h1>
-          <p className="lede">{event.summary}</p>
-          <ul className="row" style={{ listStyle: 'none', margin: 0, padding: 0, gap: '10px 28px', fontSize: 17 }}>
-            <li><strong style={{ fontWeight: 600 }}>{fullDate(event.startsAt)}</strong></li>
-            <li className="row" style={{ gap: 8 }}><ClockIcon />{timeRange(event.startsAt, event.endsAt)}</li>
-            <li className="row" style={{ gap: 8 }}><PinIcon />{event.location}</li>
-          </ul>
-          {!past ? (
-            <div className="row">
-              <a href={`/events/${event.slug}/ics`} className="btn btn--outline btn--sm">
-                <CalendarPlusIcon /> Add to calendar
-              </a>
-            </div>
-          ) : null}
-        </div>
-      </header>
+      <PageHero
+        id="event-title"
+        compact
+        eyebrow={`${EVENT_CATEGORY_LABELS[event.category] ?? event.category}${status}`}
+        title={event.title}
+        intro={event.summary}
+        crumbs={[{ label: 'Events', href: '/events' }, { label: event.title }]}
+      >
+        <ul className="row" style={{ listStyle: 'none', margin: 0, padding: 0, '--gap': '0.75rem 1.75rem', fontSize: '1.0625rem' } as CSSProperties}>
+          <li style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>{fullDate(event.startsAt)}</li>
+          <li className="row" style={{ '--gap': '0.5rem' } as CSSProperties}>
+            <Icon name="clock" size={18} style={{ color: 'var(--sun)' }} />
+            {timeRange(event.startsAt, event.endsAt)}
+          </li>
+          <li className="row" style={{ '--gap': '0.5rem' } as CSSProperties}>
+            <Icon name="map-pin" size={18} style={{ color: 'var(--sun)' }} />
+            {event.location}
+          </li>
+        </ul>
+        {!past ? (
+          <div className="row mt-8">
+            {open ? (
+              <Btn href="#register" variant="sun" icon="arrow-down">
+                Count me in
+              </Btn>
+            ) : null}
+            <Btn href={`/events/${event.slug}/ics`} variant="line-light" icon="calendar-plus">
+              Add to calendar
+            </Btn>
+          </div>
+        ) : null}
+      </PageHero>
 
-      <div className="theme-cream">
-        <div className="container row section" style={{ alignItems: 'flex-start', gap: '48px 72px' }}>
-          <div className="stack" style={{ flex: '1 1 560px', minWidth: 0, gap: 24 }}>
-            <RichText data={event.description} />
+      <div className="wrap sec">
+        <div className="split" style={{ alignItems: 'start' }}>
+          <div className="stack" style={{ '--gap': '2rem', minWidth: 0 } as CSSProperties}>
+            <div className="prose">
+              <RichText data={event.description} />
+            </div>
             {event.accessibility ? (
               <div className="notice">
                 <span>
@@ -94,27 +101,38 @@ export default async function EventPage({ params }: { params: Params }) {
               </div>
             ) : null}
             {event.project ? (
-              <p style={{ margin: 0 }}>
-                Part of <Link href={`/land-and-gardens/${event.project.slug}`} style={{ color: 'var(--forest)', fontWeight: 600 }}>{event.project.name}</Link>.
+              <p>
+                Part of{' '}
+                <Link href={`/land-and-gardens/${event.project.slug}`} className="link">
+                  {event.project.name}
+                </Link>
+                .
               </p>
             ) : null}
           </div>
-          <section id="register" aria-labelledby="reg-title" className="card stack" style={{ flex: '0 1 440px', minWidth: 0, padding: 'clamp(24px, 3vw, 32px)', gap: 16 }}>
-            <h2 id="reg-title" className="h3">Register</h2>
-            {open ? (
-              event.registration?.externalUrl ? (
-                <a href={event.registration.externalUrl} className="btn btn--dark" rel="noopener noreferrer">
-                  Register on the partner site
-                </a>
+          <section id="register" aria-labelledby="reg-title" className="form-panel" data-reveal>
+            <h2 id="reg-title" className="h-md">
+              {open ? 'Count me in' : 'Registration'}
+            </h2>
+            <div className="mt-6">
+              {open ? (
+                event.registration?.externalUrl ? (
+                  <Btn href={event.registration.externalUrl} variant="leaf" rel="noopener noreferrer">
+                    Register on the partner site
+                  </Btn>
+                ) : (
+                  <RegisterForm eventId={String(event.id)} />
+                )
               ) : (
-                <RegisterForm eventId={String(event.id)} />
-              )
-            ) : (
-              <p className="body-muted" style={{ margin: 0 }}>
-                {past ? 'This event has passed.' : event.status === 'cancelled' ? 'This event has been cancelled.' : 'Registration is closed.'}{' '}
-                <Link href="/events" style={{ color: 'var(--forest)' }}>See upcoming events</Link>.
-              </p>
-            )}
+                <p className="soft">
+                  {past ? 'This event has passed.' : event.status === 'cancelled' ? 'This event has been cancelled.' : 'Registration is closed.'}{' '}
+                  <Link href="/events" className="link">
+                    See upcoming events
+                  </Link>
+                  .
+                </p>
+              )}
+            </div>
           </section>
         </div>
       </div>

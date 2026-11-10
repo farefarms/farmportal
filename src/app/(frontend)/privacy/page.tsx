@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 
+import { PageHero } from '@/components/ui'
 import { getSiteSettings } from '@/lib/queries'
 
 export const metadata: Metadata = {
@@ -16,9 +17,10 @@ export default async function PrivacyPage() {
   const settings = await getSiteSettings()
   const contact = settings.privacyContact || settings.contactEmail
   return (
-    <section className="theme-cream section">
-      <div className="container prose" style={{ maxWidth: 760 }}>
-        <h1 className="h1" style={{ marginBottom: 24 }}>Privacy notice</h1>
+    <>
+      <PageHero id="privacy-title" compact eyebrow="Privacy" title="Your information, *your choice.*" intro="How FARE Farms collects, uses and protects the information you share with us." />
+      <section className="wrap wrap--narrow sec">
+      <div className="prose">
         <p>
           FARE Farms collects only the information you choose to give us through this website, and uses it only for the purpose you gave it for.
         </p>
@@ -46,6 +48,7 @@ export default async function PrivacyPage() {
           You can ask to see, correct or delete your information, or unsubscribe, at any time by emailing <a href={`mailto:${contact}`}>{contact}</a>.
         </p>
       </div>
-    </section>
+      </section>
+    </>
   )
 }

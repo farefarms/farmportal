@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import type { CSSProperties } from 'react'
 
 import { JsonLd } from '@/components/JsonLd'
 import { RichText } from '@/components/RichText'
-import { Eyebrow, Photo } from '@/components/ui'
+import { Eyebrow, pad2, PageHero, Photo, PhotoCredit } from '@/components/ui'
 import { getRecipe } from '@/lib/queries'
 import { absoluteUrl } from '@/lib/site'
 
@@ -41,77 +42,97 @@ export default async function RecipePage({ params }: { params: Params }) {
           recipeInstructions: (r.steps ?? []).map((s) => ({ '@type': 'HowToStep', text: s.body })),
         }}
       />
-      <header className="theme-clay">
-        <div className="container row" style={{ paddingBlock: 'clamp(40px, 5vw, 72px)', gap: '40px 64px' }}>
-          <div className="stack" style={{ flex: '1 1 520px', minWidth: 0, gap: 18 }}>
-            <nav aria-label="Breadcrumb" className="breadcrumb">
-              <ol style={{ color: 'var(--cream)' }}>
-                <li><Link href="/food-and-culture#recipes" style={{ color: 'var(--cream)' }}>Recipes</Link></li>
-                <li aria-hidden="true">/</li>
-                <li aria-current="page">{r.title}</li>
-              </ol>
-            </nav>
-            {r.region ? <Eyebrow>{r.region}</Eyebrow> : null}
-            <h1 className="h1">{r.title}</h1>
-            <p className="lede">{r.summary}</p>
-            <p style={{ margin: 0, fontWeight: 600 }}>{cook ? `Shared by ${cook}` : 'Shared anonymously'}</p>
-            <div className="row" style={{ gap: 16, fontSize: 15 }}>
-              {r.serves ? <span>Serves {r.serves}</span> : null}
-              {r.time ? <span>{r.time}</span> : null}
-            </div>
-          </div>
-          <div style={{ flex: '0 1 420px', minWidth: 0 }}>
-            <Photo media={r.image} arch height="clamp(300px, 32vw, 440px)" priority />
-          </div>
+      <PageHero
+        id="recipe-title"
+        compact
+        tone="clay"
+        eyebrow={r.region ? `Recipe · ${r.region}` : 'Recipe'}
+        title={r.title}
+        intro={r.summary}
+        crumbs={[{ label: 'Recipes', href: '/food-and-culture#recipes' }, { label: r.title }]}
+      >
+        <div className="row" style={{ '--gap': '0.5rem 1.5rem', fontFamily: 'var(--font-display)', fontWeight: 600 } as CSSProperties}>
+          <span>{cook ? `Shared by ${cook}` : 'Shared anonymously'}</span>
+          {r.serves ? <span>Serves {r.serves}</span> : null}
+          {r.time ? <span>{r.time}</span> : null}
         </div>
-      </header>
-      <div style={{ background: 'var(--card)' }}>
-        <div className="container row section" style={{ alignItems: 'flex-start', gap: '48px 72px' }}>
+      </PageHero>
+
+      <div className="wrap sec">
+        <figure style={{ margin: '0 0 4rem' }} data-reveal>
+          <div style={{ position: 'relative', aspectRatio: '21 / 9', borderRadius: '2rem', overflow: 'hidden' }}>
+            <Photo media={r.image} tone="clay" art="bowl" priority style={{ position: 'absolute', inset: 0 }} />
+          </div>
+          <PhotoCredit media={r.image} />
+        </figure>
+        <div className="split" style={{ gridTemplateColumns: undefined }}>
           {r.ingredients?.length ? (
-            <section aria-labelledby="ing-title" style={{ flex: '0 1 340px', minWidth: 0 }}>
-              <h2 id="ing-title" className="h3" style={{ marginBottom: 14 }}>Ingredients</h2>
-              <ul className="rule-list">
-                {r.ingredients.map((i, idx) => (
-                  <li key={`${i.item}-${idx}`} style={{ padding: '10px 0' }}>
-                    {i.quantity ? <strong style={{ fontWeight: 600 }}>{i.quantity} </strong> : null}
-                    {i.item}
-                  </li>
-                ))}
-              </ul>
-              {r.crops?.length ? (
-                <p className="small" style={{ marginTop: 18 }}>
-                  Learn about:{' '}
-                  {r.crops.map((c, idx) => (
-                    <span key={c.id}>
-                      {idx > 0 ? ', ' : ''}
-                      <Link href={`/learn/crops/${c.slug}`} style={{ color: 'var(--forest)' }}>{c.name}</Link>
-                    </span>
+            <section aria-labelledby="ing-title">
+              <div className="card card--muted card--lg">
+                <Eyebrow>You’ll need</Eyebrow>
+                <h2 id="ing-title" className="h-md mt-4">
+                  Ingredients
+                </h2>
+                <ul className="lines mt-6">
+                  {r.ingredients.map((i, idx) => (
+                    <li key={`${i.item}-${idx}`} style={{ padding: '0.75rem 0' }}>
+                      {i.quantity ? <strong style={{ fontWeight: 700 }}>{i.quantity} </strong> : null}
+                      {i.item}
+                    </li>
                   ))}
-                </p>
-              ) : null}
+                </ul>
+                {r.crops?.length ? (
+                  <p className="small mt-6">
+                    Learn about:{' '}
+                    {r.crops.map((c, idx) => (
+                      <span key={c.id}>
+                        {idx > 0 ? ', ' : ''}
+                        <Link href={`/learn/crops/${c.slug}`} className="link">
+                          {c.name}
+                        </Link>
+                      </span>
+                    ))}
+                  </p>
+                ) : null}
+              </div>
             </section>
-          ) : null}
-          <div className="stack" style={{ flex: '1 1 560px', minWidth: 0, gap: 40 }}>
+          ) : (
+            <div />
+          )}
+          <div className="stack" style={{ '--gap': '3rem', minWidth: 0 } as CSSProperties}>
             {r.steps?.length ? (
               <section aria-labelledby="method-title">
-                <h2 id="method-title" className="h3" style={{ marginBottom: 14 }}>Method</h2>
-                <ol style={{ margin: 0, paddingLeft: 22, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <Eyebrow>Method</Eyebrow>
+                <h2 id="method-title" className="sr-only">
+                  Method
+                </h2>
+                <ol className="lines mt-6">
                   {r.steps.map((s, idx) => (
-                    <li key={idx}>{s.body}</li>
+                    <li key={idx}>
+                      <div className="lines__row">
+                        <span className="lines__no">{pad2(idx + 1)}</span>
+                        <span className="lead lead--sm" style={{ color: 'var(--soil)' }}>
+                          {s.body}
+                        </span>
+                      </div>
+                    </li>
                   ))}
                 </ol>
               </section>
             ) : null}
             {r.storyBehind ? (
               <section aria-labelledby="story-title">
-                <h2 id="story-title" className="h3" style={{ marginBottom: 14 }}>The story behind it</h2>
-                <RichText data={r.storyBehind} />
+                <Eyebrow>The story behind it</Eyebrow>
+                <h2 id="story-title" className="sr-only">
+                  The story behind it
+                </h2>
+                <div className="prose mt-6">
+                  <RichText data={r.storyBehind} />
+                </div>
               </section>
             ) : null}
             {r.consent?.withdrawalContact ? (
-              <p className="tiny" style={{ margin: 0, color: 'var(--muted)' }}>
-                Shared with consent. To ask about or withdraw this recipe, contact {r.consent.withdrawalContact}.
-              </p>
+              <p className="small soft">Shared with consent. To ask about or withdraw this recipe, contact {r.consent.withdrawalContact}.</p>
             ) : null}
           </div>
         </div>

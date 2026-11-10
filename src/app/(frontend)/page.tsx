@@ -1,25 +1,47 @@
 import Link from 'next/link'
 import type { CSSProperties } from 'react'
 
-import { CropCard, EventTicket, SiteCard } from '@/components/cards'
+import { CropCard, EventRow, GardenCard, StoryCard } from '@/components/cards'
 import { JsonLd } from '@/components/JsonLd'
-import { ArrowIcon, Eyebrow, Furrows, LinkArrow, Photo, SectionHead, SeedIcon } from '@/components/ui'
-import { getHomePage, getMarketplace, getSiteSettings, listCrops, listEvents, listFeaturedResources, listProjects } from '@/lib/queries'
+import { Pollen } from '@/components/Pollen'
+import { SeasonCalendar } from '@/components/SeasonCalendar'
+import { SeedGame } from '@/components/SeedGame'
+import { Btn, Eyebrow, Icon, Marquee, SectionHead, SproutMark, Words } from '@/components/ui'
+import { getHomePage, getMarketplace, getSiteSettings, listCrops, listEvents, listFeaturedResources, listProjects, listStories } from '@/lib/queries'
 import { DESCRIPTION, RESOURCE_TYPE_LABELS, SITE_NAME, SITE_URL } from '@/lib/site'
 
 export const revalidate = 300
 
 const PILLARS = [
-  { verb: 'Learn', text: 'Discover agricultural heritage.', cta: 'Knowledge Library', href: '/learn', color: 'c-forest' },
-  { verb: 'Grow', text: 'Learn culturally meaningful growing practices.', cta: 'Growing guides', href: '/learn#growing-calendar', color: 'c-clay' },
-  { verb: 'Preserve', text: 'Care for the land.', cta: 'Land stewardship', href: '/land-and-gardens#stewardship', color: 'c-marigold' },
-  { verb: 'Share', text: 'Build community.', cta: 'Events & community', href: '/events', color: 'c-soil' },
+  { verb: 'Learn', text: 'Discover agricultural heritage.', cta: 'Knowledge Library', href: '/learn' },
+  { verb: 'Grow', text: 'Learn culturally meaningful growing practices.', cta: 'Growing guides', href: '/learn#growing-calendar' },
+  { verb: 'Preserve', text: 'Care for the land.', cta: 'Land stewardship', href: '/land-and-gardens#stewardship' },
+  { verb: 'Share', text: 'Build community.', cta: 'Events & community', href: '/events' },
 ]
 
-const FOCUS = ['Agricultural knowledge', 'Food sovereignty', 'Cultural preservation', 'Community stewardship']
+const FOCUS = ['Agricultural Knowledge', 'Food Sovereignty', 'Cultural Preservation', 'Community Stewardship']
+
+/** Sprouts along the horizon of the placeholder hero scene. */
+const HorizonCrops = () => (
+  <svg className="scene__crops" viewBox="0 0 1440 240" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    {Array.from({ length: 26 }, (_, i) => {
+      const x = 20 + i * 56 + (i % 3) * 9
+      const h = 70 + ((i * 37) % 90)
+      const y = 240
+      return (
+        <g key={i} fill="currentColor">
+          <path d={`M${x} ${y} V${y - h}`} stroke="currentColor" strokeWidth="4" />
+          <path d={`M${x} ${y - h * 0.55} C${x - 30} ${y - h * 0.55} ${x - 44} ${y - h * 0.8} ${x - 44} ${y - h} C${x - 14} ${y - h} ${x} ${y - h * 0.8} ${x} ${y - h * 0.55}Z`} />
+          <path d={`M${x} ${y - h * 0.75} C${x + 26} ${y - h * 0.75} ${x + 40} ${y - h * 0.95} ${x + 40} ${y - h - 16} C${x + 12} ${y - h - 16} ${x} ${y - h * 0.95} ${x} ${y - h * 0.75}Z`} opacity=".8" />
+        </g>
+      )
+    })}
+    <rect x="0" y="228" width="1440" height="12" fill="currentColor" />
+  </svg>
+)
 
 export default async function HomePage() {
-  const [home, settings, market, crops, resources, projects, events] = await Promise.all([
+  const [home, settings, market, crops, resources, projects, events, stories] = await Promise.all([
     getHomePage(),
     getSiteSettings(),
     getMarketplace(),
@@ -27,8 +49,10 @@ export default async function HomePage() {
     listFeaturedResources(3),
     listProjects(),
     listEvents({ limit: 3 }),
+    listStories(),
   ])
   const ancestral = home.headline === 'ancestral'
+  const lines = ancestral ? ['Rooted in', 'Ancestral Knowledge.', 'Growing Food Sovereignty.'] : ['Rooted in Culture.', 'Growing Our Future.']
 
   return (
     <>
@@ -45,115 +69,148 @@ export default async function HomePage() {
       />
 
       {/* Hero */}
-      <section className="theme-forest furrows" aria-labelledby="hero-title">
-        <Furrows />
-        <div className="container row" style={{ paddingBlock: 'clamp(40px, 5vw, 72px) clamp(64px, 7vw, 104px)', gap: '48px 64px' }}>
-          <div className="stack" style={{ flex: '1 1 560px', minWidth: 0, alignItems: 'flex-start', gap: 26 }}>
-            <p className="eyebrow eyebrow--pill">
-              <SeedIcon color="#E3A93C" /> Afro-Indigenous-centred land &amp; food initiative — Vancouver
-            </p>
-            <h1 id="hero-title" className={`display ${ancestral ? 'h1' : 'h1 h1--hero'}`} style={{ display: 'flex', flexDirection: 'column' }}>
-              <span>{ancestral ? 'Rooted in Ancestral Knowledge.' : 'Rooted in Culture.'}</span>
-              <span className="accent">{ancestral ? 'Growing Food Sovereignty.' : 'Growing Our Future.'}</span>
-            </h1>
-            <p className="lede">{home.heroIntro}</p>
-            <div className="row">
-              <Link href="/learn" className="btn btn--primary">
-                Explore the Knowledge Library <ArrowIcon size={17} />
-              </Link>
-              <Link href="/get-involved" className="btn btn--outline">
-                Get Involved
-              </Link>
+      <section className="hero" aria-labelledby="hero-title">
+        <div className="hero__bg" aria-hidden="true">
+          {home.heroImage?.url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={home.heroImage.url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <div className="scene">
+              <div className="scene__sun" />
+              <div className="scene__field" />
+              <HorizonCrops />
             </div>
-          </div>
-          <div style={{ flex: '0 1 420px', minWidth: 0, position: 'relative', paddingTop: 28 }}>
-            <span className="sun" aria-hidden="true" style={{ top: 0, right: -24, width: 180, height: 180 }} />
-            <div style={{ position: 'relative' }}>
-              <Photo media={home.heroImage} arch dark height="clamp(380px, 38vw, 540px)" priority />
+          )}
+          <div className="hero__shade" />
+        </div>
+        <Pollen />
+        <div className="hero__content">
+          <p className="tag-pill tag-pill--glass hero__fade">
+            <span className="tag-pill__dot" aria-hidden="true" />
+            Afro-Indigenous agricultural heritage · Vancouver
+          </p>
+          <h1 id="hero-title" className="hero__title h-hero">
+            {lines.map((line, i) => (
+              <span key={line}>
+                <span className={i === 1 ? 'sunline' : undefined} style={{ '--i': i } as CSSProperties}>
+                  {line}
+                </span>
+              </span>
+            ))}
+          </h1>
+          <div className="hero__foot hero__fade">
+            <p className="hero__intro">{home.heroIntro}</p>
+            <div className="row">
+              <Btn href="/learn" variant="sun">
+                Explore the Knowledge Library
+              </Btn>
+              <Btn href="/get-involved" variant="line-light">
+                Get Involved
+              </Btn>
             </div>
           </div>
         </div>
+        <a href="#roots" className="hero__scroll">
+          <Icon name="arrow-down" size={20} />
+          <span className="sr-only">Scroll to introduction</span>
+        </a>
       </section>
 
-      {/* Focus band */}
-      <div className="theme-marigold">
-        <ul
-          className="container row"
-          aria-label="What we advance"
-          style={{ listStyle: 'none', margin: '0 auto', paddingBlock: 22, justifyContent: 'center', gap: '10px 36px', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 'clamp(19px, 1.8vw, 25px)' }}
-        >
-          {FOCUS.map((f) => (
-            <li key={f} className="row" style={{ gap: 14 }}>
-              <SeedIcon size={16} color="#1F4D35" />
-              {f}
+      <Marquee items={FOCUS} tilt />
+
+      {/* Our roots run deep + Learn. Grow. Preserve. Share. */}
+      <section id="roots" className="wrap sec" aria-labelledby="roots-title">
+        <div className="split">
+          <div>
+            <Eyebrow>Our roots</Eyebrow>
+            <Words id="roots-title" className="h-xl mt-6" text="Our roots *run deep.*" />
+          </div>
+          <div className="stack" style={{ justifyContent: 'flex-end', '--gap': '2rem' } as CSSProperties}>
+            <p className="lead" data-reveal>
+              {home.rootsBody}
+            </p>
+            <div data-reveal>
+              <Btn href="/our-roots" variant="line">
+                Read about our roots
+              </Btn>
+            </div>
+          </div>
+        </div>
+
+        <div className="head mt-20" style={{ marginBottom: '2rem' }}>
+          <h3 className="h-sm">Learn. Grow. Preserve. Share.</h3>
+          <p className="soft mw-lg" data-reveal>
+            {home.pillarsIntro}
+          </p>
+        </div>
+        <ul className="cells cells--4" data-reveal>
+          {PILLARS.map((p) => (
+            <li key={p.verb} style={{ display: 'flex' }}>
+              <Link href={p.href} className="cell" style={{ flex: 1 }}>
+                <span className="cell__big">{p.verb}</span>
+                <span className="mt-3 soft">{p.text}</span>
+                <span className="cell__go">
+                  {p.cta} <Icon name="arrow-up-right" />
+                </span>
+              </Link>
             </li>
           ))}
         </ul>
-      </div>
-
-      {/* Our roots run deep + Learn. Grow. Preserve. Share. */}
-      <section className="theme-cream section" aria-labelledby="roots-title">
-        <div className="container">
-          <div className="split">
-            <div className="split__main">
-              <Eyebrow>Our roots</Eyebrow>
-              <h2 id="roots-title" className="h2 h2--xl">
-                Our roots <span className="accent">run deep.</span>
-              </h2>
-            </div>
-            <div className="split__side stack" style={{ '--gap': '18px' } as CSSProperties}>
-              <p className="body-muted" style={{ fontSize: 18 }}>{home.rootsBody}</p>
-              <LinkArrow href="/our-roots">Read about our roots</LinkArrow>
-            </div>
-          </div>
-
-          <div className="split" style={{ marginTop: 'clamp(56px, 6vw, 88px)', borderTop: '2px solid var(--ink)', paddingTop: 22, alignItems: 'baseline' }}>
-            <h2 className="h3" style={{ fontSize: 'clamp(28px, 2.6vw, 38px)' }}>Learn. Grow. Preserve. Share.</h2>
-            <p className="body-muted" style={{ maxWidth: 560 }}>{home.pillarsIntro}</p>
-          </div>
-          <div className="grid" style={{ marginTop: 28, '--min': '250px' } as CSSProperties}>
-            {PILLARS.map((p, i) => (
-              <Link key={p.verb} href={p.href} className={`pillar ${p.color}`}>
-                <span className="tiny" style={{ fontWeight: 600 }}>{String(i + 1).padStart(2, '0')}</span>
-                <span className="stack" style={{ gap: 8 }}>
-                  <span className="pillar__verb">{p.verb}</span>
-                  <span style={{ fontSize: 16, lineHeight: 1.45 }}>{p.text}</span>
-                  <span className="row" style={{ gap: 8, fontWeight: 600, fontSize: 15, marginTop: 6 }}>
-                    {p.cta} <ArrowIcon size={15} />
-                  </span>
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* From seed to story */}
-      <section className="theme-paper section" aria-labelledby="seed-title">
-        <div className="container">
-          <SectionHead eyebrow="Heritage crop directory" id="seed-title" title={<>From seed <span className="accent">to story.</span></>} intro={home.seedToStoryIntro} />
+      <section className="on-leaf grain sec" aria-labelledby="seed-title">
+        <div className="mudcloth layer" aria-hidden="true" />
+        <div className="wrap">
+          <SectionHead
+            eyebrow="Heritage crop directory"
+            id="seed-title"
+            title="From seed *to story.*"
+            intro={home.seedToStoryIntro}
+            action={
+              <Btn href="/learn/crops" variant="line-light">
+                All crop profiles
+              </Btn>
+            }
+          />
           {crops.length ? (
-            <div className="grid" style={{ '--min': '200px' } as CSSProperties}>
-              {crops.slice(0, 5).map((c, i) => (
+            <div className="cols cols--3">
+              {crops.slice(0, 3).map((c, i) => (
                 <CropCard key={c.id} crop={c} index={i} />
               ))}
             </div>
           ) : (
-            <p className="body-muted">Crop profiles are being researched and reviewed with community growers. Check back soon.</p>
+            <p className="soft">Crop profiles are being researched and reviewed with community growers. Check back soon.</p>
           )}
+
           {resources.length ? (
-            <div className="row" style={{ marginTop: 48, alignItems: 'flex-start', gap: '24px 56px' }}>
-              <div style={{ flex: '0 1 300px' }}>
-                <h3 className="h4" style={{ fontSize: 26, marginBottom: 8 }}>Featured from the library</h3>
-                <LinkArrow href="/learn">Browse the Knowledge Library</LinkArrow>
+            <div className="split mt-20" style={{ alignItems: 'start' }}>
+              <div data-reveal>
+                <p className="label" style={{ color: 'var(--sun)' }}>
+                  From the Knowledge Library
+                </p>
+                <p className="h-sm mt-4">Sourced, credited and reviewed with community.</p>
+                <div className="mt-6">
+                  <Btn href="/learn" variant="sun">
+                    Browse the library
+                  </Btn>
+                </div>
               </div>
-              <ul className="rule-list" style={{ flex: '1 1 560px', minWidth: 0, '--rule': 'rgba(30,26,22,0.2)' } as CSSProperties}>
-                {resources.map((r) => (
+              <ul className="lines" data-reveal>
+                {resources.map((r, i) => (
                   <li key={r.id}>
-                    <Link href={`/learn/${r.slug}`} className="row" style={{ padding: '16px 0', gap: '8px 20px', textDecoration: 'none' }}>
-                      <span className="tiny" style={{ flex: '0 0 120px', color: 'var(--clay)', fontWeight: 600 }}>{RESOURCE_TYPE_LABELS[r.type] ?? r.type}</span>
-                      <span className="h4" style={{ flex: '1 1 260px', minWidth: 0 }}>{r.title}</span>
-                      {r.readingTime ? <span className="tiny" style={{ color: 'var(--muted)' }}>{r.readingTime}</span> : null}
+                    <Link href={`/learn/${r.slug}`} className="lines__row">
+                      <span className="lines__no">{String(i + 1).padStart(2, '0')}</span>
+                      <span style={{ flex: 1, minWidth: 0 }}>
+                        <span className="small" style={{ color: 'var(--sun)', fontWeight: 600 }}>
+                          {RESOURCE_TYPE_LABELS[r.type] ?? r.type}
+                          {r.readingTime ? ` · ${r.readingTime}` : ''}
+                        </span>
+                        <span className="lines__title" style={{ display: 'block', marginTop: '0.25rem' }}>
+                          {r.title}
+                        </span>
+                      </span>
+                      <Icon name="arrow-up-right" size={20} style={{ alignSelf: 'center' }} />
                     </Link>
                   </li>
                 ))}
@@ -163,60 +220,102 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Plant a seed */}
+      <section className="wrap sec" aria-label="Plant a seed">
+        <SeedGame />
+      </section>
+
       {/* Living classrooms */}
-      <section className="theme-forest section" aria-labelledby="gardens-title">
-        <div className="container">
-          <SectionHead
-            eyebrow="Land & gardens"
-            id="gardens-title"
-            title={<>Our gardens are <span className="accent">living classrooms.</span></>}
-            intro={home.gardensIntro}
-            action={<LinkArrow href="/land-and-gardens">Explore Land &amp; Gardens</LinkArrow>}
-          />
-          {projects.length ? (
-            <div className="grid" style={{ '--min': '250px', '--gap': '32px 20px' } as CSSProperties}>
-              {projects.slice(0, 4).map((p) => (
-                <SiteCard key={p.id} project={p} dark />
-              ))}
-            </div>
-          ) : (
-            <p className="body-muted">Site details are being confirmed with our partners.</p>
-          )}
-        </div>
+      <section className="wrap sec sec--top0" aria-labelledby="gardens-title">
+        <SectionHead
+          eyebrow="Land & gardens"
+          id="gardens-title"
+          title="Our gardens are *living classrooms.*"
+          intro={home.gardensIntro}
+          action={
+            <Btn href="/land-and-gardens" variant="line">
+              All sites
+            </Btn>
+          }
+        />
+        {projects.length ? (
+          <div className="cols cols--2" style={{ '--gap': '3rem 1.5rem' } as CSSProperties}>
+            {projects.slice(0, 2).map((p, i) => (
+              <GardenCard key={p.id} project={p} index={i} />
+            ))}
+          </div>
+        ) : (
+          <p className="soft">Site details are being confirmed with our partners.</p>
+        )}
+      </section>
+
+      {/* The growing year */}
+      <section id="growing-year" className="wrap sec sec--top0" aria-labelledby="year-title">
+        <Eyebrow>The growing year</Eyebrow>
+        <Words id="year-title" className="h-xl mt-6" text="Follow the seasons *with us.*" style={{ marginBottom: '3rem' }} />
+        <SeasonCalendar />
       </section>
 
       {/* Events */}
-      <section className="theme-cream section" aria-labelledby="events-title">
-        <div className="container">
-          <SectionHead eyebrow="Events & community" id="events-title" title="Gather on the land." action={<LinkArrow href="/events">Full calendar</LinkArrow>} />
+      <section className="on-muted sec" aria-labelledby="events-title">
+        <div className="wrap">
+          <SectionHead
+            eyebrow="Upcoming"
+            id="events-title"
+            title="Gather on *the land.*"
+            action={
+              <Btn href="/events" variant="line">
+                Full calendar
+              </Btn>
+            }
+          />
           {events.length ? (
-            <div className="stack" style={{ gap: 14 }}>
+            <ol className="events">
               {events.map((e) => (
-                <EventTicket key={e.id} event={e} />
+                <EventRow key={e.id} event={e} />
               ))}
-            </div>
+            </ol>
           ) : (
-            <p className="body-muted">New gatherings are being planned. Join the newsletter below to hear first.</p>
+            <p className="soft">New gatherings are being planned. Join the newsletter below to hear first.</p>
           )}
         </div>
       </section>
 
+      {/* Voices — only stories shared with documented consent */}
+      {stories.length ? (
+        <section className="wrap sec" aria-labelledby="voices-title">
+          <Eyebrow id="voices-title">Voices from the garden</Eyebrow>
+          <div className="cols cols--3 mt-12">
+            {stories.slice(0, 3).map((s, i) => (
+              <StoryCard key={s.id} story={s} index={i} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       {/* Marketplace teaser */}
-      <section className="theme-soil section" aria-labelledby="market-title">
-        <div className="container row" style={{ gap: '40px 72px' }}>
-          <div className="stack" style={{ flex: '1 1 480px', minWidth: 0, alignItems: 'flex-start', gap: 22 }}>
-            <span className="pill pill--marigold">Coming soon</span>
-            <h2 id="market-title" className="h2 h2--xl">FARE Marketplace</h2>
-            <p className="lede" style={{ maxWidth: 520 }}>{market.intro}</p>
-            <div className="row">
-              <Link href="/marketplace#updates" className="btn btn--primary">Get marketplace updates</Link>
-              <Link href="/marketplace#producers" className="btn btn--outline">I’m a grower or maker</Link>
+      <section className="on-soil grain sec" aria-labelledby="market-title">
+        <div className="mudcloth layer" style={{ '--o': 0.04 } as CSSProperties} aria-hidden="true" />
+        <div className="wrap split" style={{ alignItems: 'end' }}>
+          <div>
+            <span className="tag">Coming soon</span>
+            <Words id="market-title" className="h-xl mt-6" text="FARE *Marketplace*" />
+            <p className="lead mt-6 mw-lg" data-reveal>
+              {market.intro}
+            </p>
+            <div className="row mt-8" data-reveal>
+              <Btn href="/marketplace#updates" variant="sun">
+                Get marketplace updates
+              </Btn>
+              <Btn href="/marketplace#producers" variant="line-light">
+                I’m a grower or maker
+              </Btn>
             </div>
           </div>
-          <ul className="row" style={{ flex: '1 1 420px', minWidth: 0, listStyle: 'none', margin: 0, padding: 0, gap: 10 }}>
+          <ul className="chip-list" data-reveal style={{ color: 'var(--cream)' }}>
             {(market.categories ?? []).map((c) => (
-              <li key={c.label} className="row" style={{ gap: 10, padding: '14px 20px', borderRadius: 999, border: '1px solid rgba(244,237,225,0.3)', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 19 }}>
-                <SeedIcon size={14} color="#E3A93C" />
+              <li key={c.label} className="chip" style={{ fontSize: '1.0625rem' }}>
+                <SproutMark className="marquee__sprout" />
                 {c.label}
               </li>
             ))}
@@ -225,22 +324,25 @@ export default async function HomePage() {
       </section>
 
       {/* Get involved */}
-      <section className="theme-marigold section" aria-labelledby="cta-title">
-        <div className="container stack" style={{ alignItems: 'flex-start', gap: 22 }}>
-          <h2 id="cta-title" className="display" style={{ fontSize: 'clamp(40px, 5vw, 76px)', lineHeight: 1.02, maxWidth: 900 }}>
-            There’s room for you in the garden.
-          </h2>
-          <p style={{ margin: 0, fontSize: 19, maxWidth: 560 }}>Volunteer, partner, or contribute knowledge — every pair of hands helps something grow.</p>
-          <div className="row">
-            <Link href="/get-involved" className="btn btn--dark">
-              Get Involved <ArrowIcon size={17} />
-            </Link>
-            <Link href="/get-involved#contribute" className="btn btn--outline">
-              Share your knowledge
-            </Link>
+      <div className="cta-wrap">
+        <section className="cta grain" aria-labelledby="cta-title">
+          <div className="mudcloth layer" style={{ '--o': 0.07 } as CSSProperties} aria-hidden="true" />
+          <div className="cta__grid">
+            <Words id="cta-title" className="h-cta" text="There’s room for you *in the garden.*" />
+            <div className="stack" style={{ '--gap': '1.5rem' } as CSSProperties} data-reveal>
+              <p className="cta__text">Volunteer, partner, or contribute knowledge — every pair of hands helps something grow.</p>
+              <div className="row">
+                <Btn href="/get-involved" variant="cream">
+                  Get Involved
+                </Btn>
+                <Btn href="/get-involved#contribute" variant="line-light">
+                  Share your knowledge
+                </Btn>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </>
   )
 }

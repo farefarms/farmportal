@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import type { CSSProperties } from 'react'
 
-import { Eyebrow, Furrows, LinkArrow, Photo } from '@/components/ui'
+import { Cta } from '@/components/Cta'
+import { Btn, Eyebrow, Marquee, PageHero, pad2, Photo, SectionHead, Words } from '@/components/ui'
 import { listPartners, listPeople, listTopics } from '@/lib/queries'
 import { DESCRIPTION } from '@/lib/site'
 
@@ -27,149 +27,143 @@ export default async function OurRootsPage() {
 
   return (
     <>
-      <section className="theme-forest furrows" aria-labelledby="roots-title">
-        <Furrows />
-        <div className="container row" style={{ paddingBlock: 'clamp(48px, 5vw, 80px) clamp(64px, 7vw, 96px)', gap: '48px 64px' }}>
-          <div className="stack" style={{ flex: '1 1 600px', minWidth: 0, gap: 24 }}>
-            <Eyebrow>Our roots</Eyebrow>
-            <h1 id="roots-title" className="h1" style={{ display: 'flex', flexDirection: 'column', fontSize: 'clamp(40px, 4.2vw, 60px)', marginTop: -6 }}>
-              <span>Rooted in Ancestral Knowledge.</span>
-              <span className="accent">Growing Food Sovereignty.</span>
-            </h1>
-            <p className="lede">{DESCRIPTION}</p>
-          </div>
-          <div style={{ flex: '0 1 360px', minWidth: 0, position: 'relative', paddingTop: 24 }}>
-            <span className="sun" aria-hidden="true" style={{ top: 0, right: -20, width: 150, height: 150 }} />
-            <div style={{ position: 'relative' }}>
-              <Photo arch dark height="clamp(320px, 30vw, 440px)" />
-            </div>
-          </div>
-        </div>
-      </section>
+      <PageHero id="roots-title" eyebrow="Our Roots" title="Rooted in *ancestral knowledge.* Growing *food sovereignty.*" intro={DESCRIPTION} />
 
-      <section className="theme-cream section" aria-labelledby="why-title">
-        <div className="container row" style={{ alignItems: 'flex-start', gap: '28px 72px' }}>
-          <div style={{ flex: '1 1 480px', minWidth: 0 }}>
+      <section className="wrap sec" aria-labelledby="why-title">
+        <div className="split split--even" style={{ alignItems: 'center' }}>
+          <div data-reveal style={{ position: 'relative', aspectRatio: '4 / 5', borderRadius: '2rem', overflow: 'hidden' }}>
+            <Photo tone="clay" art="voices" style={{ position: 'absolute', inset: 0 }} />
+          </div>
+          <div>
             <Eyebrow>Why we exist</Eyebrow>
-            <h2 id="why-title" className="h2">
-              Land holds memory. <span className="accent">We help communities return to it.</span>
-            </h2>
-          </div>
-          <div className="stack" style={{ flex: '1 1 440px', minWidth: 0, gap: 16, fontSize: 18, color: 'var(--body-text)' }}>
-            <p style={{ margin: 0 }}>
-              For many Black and diasporic families, farming is ancestral knowledge — carried across oceans, through displacement, and into cities where land access is rare. In Vancouver, places like Hogan’s Alley remind us how quickly community spaces can disappear.
-            </p>
-            <p style={{ margin: 0 }}>
-              FARE Farms creates places where that knowledge can take root again: gardens, gathering spaces, and cultural landmarks that are designed with community, for community — while learning from the responsibilities of stewardship on Indigenous lands.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="theme-paper section" aria-labelledby="values-title">
-        <div className="container">
-          <h2 id="values-title" className="h2" style={{ marginBottom: 36, fontSize: 'clamp(34px, 3.6vw, 52px)' }}>Our values</h2>
-          <div className="grid" style={{ '--min': '260px', '--gap': '32px' } as CSSProperties}>
-            {VALUES.map((v, i) => (
-              <div key={v.title} className="stack stat-rule" style={{ gap: 10 }}>
-                <span className="tiny accent" style={{ fontWeight: 600 }}>{String(i + 1).padStart(2, '0')}</span>
-                <h3 className="h3" style={{ fontSize: 27 }}>{v.title}</h3>
-                <p className="body-muted" style={{ margin: 0 }}>{v.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="theme-soil section" aria-labelledby="hist-title">
-        <div className="container">
-          <div className="split mt-section-head">
-            <div className="split__main">
-              <Eyebrow>Black farming histories</Eyebrow>
-              <h2 id="hist-title" className="h2">
-                We stand on <span className="accent">their shoulders.</span>
-              </h2>
+            <Words id="why-title" className="h-lg mt-6" text="Land holds *memory.* We help communities return to it." />
+            <div className="stack mt-8" style={{ '--gap': '1.25rem' } as CSSProperties} data-reveal>
+              <p className="lead lead--sm">
+                For many Black and diasporic families, farming is ancestral knowledge — carried across oceans, through displacement, and into cities where land access is rare. In Vancouver, places like Hogan’s Alley remind us how quickly community spaces can disappear.
+              </p>
+              <p className="lead lead--sm">
+                FARE Farms creates places where that knowledge can take root again: gardens, gathering spaces, and cultural landmarks designed with community, for community — while learning from the responsibilities of stewardship on Indigenous lands.
+              </p>
             </div>
-            <p className="split__side body-muted" style={{ fontSize: 18 }}>
-              Black growers and community builders who shaped the soil — and the spaces we gather in.
-            </p>
           </div>
+        </div>
+      </section>
+
+      <Marquee items={['Land', 'Food', 'Culture', 'Community', 'Heritage']} tone="soil" />
+
+      <section className="wrap sec" aria-labelledby="values-title">
+        <Eyebrow id="values-title">Our values</Eyebrow>
+        <ul className="cells cells--2 mt-12" data-reveal>
+          {VALUES.map((v, i) => (
+            <li key={v.title} className="cell cell--lg cell--hover">
+              <span className="cell__no">{pad2(i + 1)}</span>
+              <h3 className="h-md mt-4">{v.title}</h3>
+              <p className="soft mt-3 mw-md">{v.text}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="on-leaf grain sec" aria-labelledby="hist-title">
+        <div className="mudcloth layer" aria-hidden="true" />
+        <div className="wrap">
+          <SectionHead
+            eyebrow="We stand on their shoulders"
+            id="hist-title"
+            title="Black growers who *shaped the soil.*"
+            intro="Growers, organizers and community builders whose work shaped the land — and the spaces we gather in. Each profile is sourced and reviewed."
+          />
           {people.length ? (
-            <ol className="rule-list">
-              {people.map((p) => (
-                <li key={p.id} className="row" style={{ alignItems: 'flex-start', gap: '20px 40px', padding: '30px 0' }}>
-                  <div style={{ flex: '0 0 104px' }}>
-                    <Photo media={p.image} dark height="104px" showCredit={false} className="round" />
-                  </div>
-                  <div className="stack" style={{ flex: '0 1 260px', minWidth: 0, gap: 4 }}>
-                    {p.years ? <span className="tiny accent" style={{ fontWeight: 600 }}>{p.years}</span> : null}
-                    <h3 className="h3" style={{ fontSize: 30 }}>{p.name}</h3>
-                    {p.role ? <span className="small body-muted">{p.role}</span> : null}
-                  </div>
-                  <div className="stack" style={{ flex: '1 1 380px', minWidth: 0, gap: 10 }}>
-                    <p style={{ margin: 0, fontSize: 18 }}>{p.bio}</p>
-                    {p.review?.sources?.length ? (
-                      <p className="tiny" style={{ margin: 0, color: 'rgba(244,237,225,0.8)' }}>
-                        Sources:{' '}
-                        {p.review.sources.map((s, i) => (
-                          <span key={`${s.citation}-${i}`}>
-                            {i > 0 ? '; ' : ''}
-                            {s.url ? (
-                              <a href={s.url} rel="noopener noreferrer" style={{ color: 'var(--marigold)' }}>{s.citation}</a>
-                            ) : (
-                              s.citation
-                            )}
-                          </span>
-                        ))}
-                      </p>
-                    ) : null}
-                    {p.image?.credit ? <p className="tiny" style={{ margin: 0, color: 'rgba(244,237,225,0.8)' }}>Image: {p.image.credit}</p> : null}
-                  </div>
-                </li>
+            <div className="cols cols--2">
+              {people.map((p, i) => (
+                <article key={p.id} className="person" data-reveal style={{ '--d': `${(i % 2) * 0.08}s` } as CSSProperties}>
+                  {p.years ? <p className="person__years">{p.years}</p> : null}
+                  <h3 className="person__name">{p.name}</h3>
+                  {p.role ? <p className="person__role">{p.role}</p> : null}
+                  <p className="person__bio">{p.bio}</p>
+                  {p.review?.sources?.length ? (
+                    <p className="person__src">
+                      Sources:{' '}
+                      {p.review.sources.map((s, si) => (
+                        <span key={`${s.citation}-${si}`}>
+                          {si > 0 ? '; ' : ''}
+                          {s.url ? (
+                            <a href={s.url} rel="noopener noreferrer">
+                              {s.citation}
+                            </a>
+                          ) : (
+                            s.citation
+                          )}
+                        </span>
+                      ))}
+                    </p>
+                  ) : null}
+                  {p.image?.credit ? <p className="person__src">Image: {p.image.credit}</p> : null}
+                </article>
               ))}
-            </ol>
+            </div>
           ) : (
-            <p className="body-muted">These profiles are being sourced and reviewed.</p>
+            <p className="soft">These profiles are being sourced and reviewed.</p>
           )}
         </div>
       </section>
 
-      <section className="theme-cream section" aria-labelledby="heritage-title">
-        <div className="container split" style={{ alignItems: 'center' }}>
-          <div className="split__main stack" style={{ gap: 18, alignItems: 'flex-start' }}>
+      <section className="wrap sec" aria-labelledby="heritage-title">
+        <div className="split" style={{ alignItems: 'end' }}>
+          <div>
             <Eyebrow>In the Knowledge Library</Eyebrow>
-            <h2 id="heritage-title" className="h2" style={{ fontSize: 'clamp(34px, 3.6vw, 52px)', marginTop: -18 }}>African agricultural heritage</h2>
-            <p className="body-muted" style={{ fontSize: 18, maxWidth: 560 }}>
+            <Words id="heritage-title" className="h-xl mt-6" text="African agricultural *heritage.*" />
+          </div>
+          <div className="stack" style={{ '--gap': '1.5rem', alignItems: 'flex-start' } as CSSProperties} data-reveal>
+            <p className="lead">
               Region-specific histories of African farming traditions — each article sourced, credited, and reviewed with the communities it describes.
             </p>
-            <LinkArrow href={heritageTopic ? `/learn?topic=${heritageTopic.slug}#results` : '/learn'}>Explore heritage articles</LinkArrow>
+            <Btn href={heritageTopic ? `/learn?topic=${heritageTopic.slug}#results` : '/learn'} variant="leaf">
+              Explore heritage articles
+            </Btn>
           </div>
         </div>
       </section>
 
       {partners.length ? (
-        <section className="theme-paper section" aria-labelledby="partners-title">
-          <div className="container">
-            <div className="split mt-section-head">
-              <h2 id="partners-title" className="h2" style={{ fontSize: 'clamp(34px, 3.6vw, 52px)' }}>Growing with partners</h2>
-              <Link href="/get-involved#partner" className="link-arrow">Become a partner</Link>
-            </div>
-            <ul className="grid" style={{ listStyle: 'none', margin: 0, padding: 0, '--min': '240px' } as CSSProperties}>
-              {partners.map((p) => (
-                <li key={p.id} className="card stack" style={{ padding: 22, gap: 12 }}>
+        <section className="on-muted sec" aria-labelledby="partners-title">
+          <div className="wrap">
+            <SectionHead
+              eyebrow="Partners"
+              id="partners-title"
+              title="Growing *together.*"
+              action={
+                <Btn href="/get-involved#partner" variant="line">
+                  Become a partner
+                </Btn>
+              }
+            />
+            <ul className="cols cols--3" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+              {partners.map((p, i) => (
+                <li key={p.id} className="card" data-reveal style={{ '--d': `${(i % 3) * 0.08}s` } as CSSProperties}>
                   {p.logo?.url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={p.logo.url} alt={p.logo.alt ?? `${p.name} logo`} style={{ height: 56, width: 'auto', objectFit: 'contain', alignSelf: 'flex-start' }} />
+                    <img src={p.logo.url} alt={p.logo.alt ?? `${p.name} logo`} style={{ height: 56, width: 'auto', objectFit: 'contain', marginBottom: '1.25rem' }} />
                   ) : null}
-                  <span className="h4">{p.url ? <a href={p.url} rel="noopener noreferrer" style={{ textDecoration: 'none' }}>{p.name}</a> : p.name}</span>
-                  {p.relationship ? <span className="tiny" style={{ color: 'var(--muted)' }}>{p.relationship}</span> : null}
-                  {p.description ? <span className="small" style={{ color: 'var(--body-text)' }}>{p.description}</span> : null}
+                  <h3 className="card__title">
+                    {p.url ? (
+                      <a href={p.url} rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                        {p.name}
+                      </a>
+                    ) : (
+                      p.name
+                    )}
+                  </h3>
+                  {p.relationship ? <p className="kicker mt-2">{p.relationship}</p> : null}
+                  {p.description ? <p className="soft mt-3">{p.description}</p> : null}
                 </li>
               ))}
             </ul>
           </div>
         </section>
       ) : null}
+
+      <Cta />
     </>
   )
 }

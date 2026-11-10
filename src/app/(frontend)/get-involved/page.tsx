@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
+import type { CSSProperties } from 'react'
 
+import { Cta } from '@/components/Cta'
 import { ContributeForm, VolunteerForm } from '@/components/forms/Forms'
-import { Eyebrow, Furrows } from '@/components/ui'
+import { Btn, Eyebrow, Icon, type IconName, pad2, PageHero, Words } from '@/components/ui'
 import { getSiteSettings } from '@/lib/queries'
 
 export const metadata: Metadata = {
@@ -10,59 +12,101 @@ export const metadata: Metadata = {
   alternates: { canonical: '/get-involved' },
 }
 
+const PATHS: { label: string; href: string; icon: IconName }[] = [
+  { label: 'Volunteer', href: '#volunteer', icon: 'shovel' },
+  { label: 'Share knowledge', href: '#contribute', icon: 'mic' },
+  { label: 'Partner', href: '#partner', icon: 'handshake' },
+]
+
+const ROLES = ['Weekly garden workdays', 'Event & kitchen crew', 'Youth mentorship', 'Skilled volunteering']
+
+const CONTRIBUTE_STEPS = [
+  'Tell us what you’d like to share.',
+  'We talk with you about credit, consent and who can see it.',
+  'A cultural reviewer checks it with you.',
+  'It’s published only as you agreed — and you can withdraw it any time.',
+]
+
 export default async function GetInvolvedPage() {
   const settings = await getSiteSettings()
   return (
     <>
-      <section className="theme-forest furrows" aria-labelledby="gi-title">
-        <Furrows />
-        <div className="container stack" style={{ paddingBlock: 'clamp(48px, 5vw, 80px) clamp(56px, 6vw, 88px)', gap: 24 }}>
-          <Eyebrow>Get involved</Eyebrow>
-          <h1 id="gi-title" className="h1" style={{ marginTop: -6 }}>
-            Many hands make <span className="accent">a harvest.</span>
-          </h1>
-          <p className="lede">Whether you have an afternoon, an organization, or knowledge to share — there’s a place for you in the garden.</p>
-          <nav aria-label="On this page" className="row" style={{ gap: 10 }}>
-            <a href="#volunteer" className="btn btn--outline btn--sm">Volunteer</a>
-            <a href="#contribute" className="btn btn--outline btn--sm">Contribute knowledge</a>
-            <a href="#partner" className="btn btn--outline btn--sm">Partner with us</a>
-          </nav>
-        </div>
-      </section>
+      <PageHero
+        id="gi-title"
+        eyebrow="Get Involved"
+        title="Many hands make *a harvest.*"
+        intro="Whether you have an afternoon, an organization, or knowledge to share — there’s a place for you in the garden."
+      />
 
-      <section className="theme-paper section">
-        <div className="container row" style={{ alignItems: 'stretch', gap: 20 }}>
-          <section id="volunteer" aria-labelledby="vol-title" className="card panel stack" style={{ flex: '1 1 480px', minWidth: 0, gap: 18 }}>
-            <h2 id="vol-title" className="h3" style={{ fontSize: 32 }}>Volunteer</h2>
-            <p className="body-muted" style={{ margin: 0, color: 'var(--body-text)' }}>
+      <section className="wrap sec" aria-label="Ways to take part">
+        <nav aria-label="Ways to take part" className="paths" data-reveal>
+          {PATHS.map((p) => (
+            <a key={p.href} href={p.href} className="path">
+              <span className="path__icon">
+                <Icon name={p.icon} size={24} />
+              </span>
+              <span className="path__label">{p.label}</span>
+            </a>
+          ))}
+        </nav>
+
+        <div id="volunteer" className="split mt-16" style={{ scrollMarginTop: '7rem' }}>
+          <div>
+            <Eyebrow>Volunteer</Eyebrow>
+            <Words as="h2" id="vol-title" className="h-lg mt-6" text="Get your hands *in the soil.*" />
+            <p className="lead mt-6" data-reveal>
               Join garden workdays, help at gatherings, mentor young growers, or lend skills like carpentry, design, and storytelling.
             </p>
+            <ul className="boxes mt-8" data-reveal>
+              {ROLES.map((r) => (
+                <li key={r}>{r}</li>
+              ))}
+            </ul>
+          </div>
+          <section aria-labelledby="vol-title" className="form-panel" data-reveal>
             <VolunteerForm />
-          </section>
-
-          <section id="contribute" aria-labelledby="k-title" className="panel theme-soil stack" style={{ flex: '1 1 480px', minWidth: 0, gap: 18 }}>
-            <h2 id="k-title" className="h3" style={{ fontSize: 32 }}>Contribute knowledge</h2>
-            <p className="body-muted" style={{ margin: 0 }}>
-              Share recipes, oral histories, and growing knowledge. Nothing is published until it has been reviewed with you.
-            </p>
-            <ContributeForm />
-          </section>
-        </div>
-
-        <div className="container" style={{ marginTop: 20 }}>
-          <section id="partner" aria-labelledby="partner-title" className="card panel split" style={{ alignItems: 'center' }}>
-            <div className="split__main">
-              <h2 id="partner-title" className="h3" style={{ marginBottom: 6 }}>Partner with us</h2>
-              <p className="body-muted" style={{ margin: 0, color: 'var(--body-text)' }}>
-                Organizations, schools, and institutions — let’s talk about co-creating programs, sites, and learning.
-              </p>
-            </div>
-            <a href={`mailto:${settings.contactEmail}?subject=Partnership%20with%20FARE%20Farms`} className="btn btn--outline">
-              {settings.contactEmail}
-            </a>
           </section>
         </div>
       </section>
+
+      <section id="contribute" className="on-soil grain sec" aria-labelledby="k-title">
+        <div className="mudcloth layer" style={{ '--o': 0.04 } as CSSProperties} aria-hidden="true" />
+        <div className="wrap split">
+          <div>
+            <Eyebrow>Contribute knowledge</Eyebrow>
+            <Words id="k-title" className="h-lg mt-6" text="Share what *you carry.*" />
+            <p className="lead mt-6" data-reveal>
+              Recipes, oral histories, and growing knowledge. Nothing is published until it has been reviewed with you.
+            </p>
+            <ol className="lines mt-10" data-reveal>
+              {CONTRIBUTE_STEPS.map((s, i) => (
+                <li key={s}>
+                  <div className="lines__row">
+                    <span className="lines__no">{pad2(i + 1)}</span>
+                    <span style={{ fontSize: '1.125rem' }}>{s}</span>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div className="card card--dark card--lg" data-reveal>
+            <ContributeForm />
+          </div>
+        </div>
+      </section>
+
+      <div id="partner">
+        <Cta
+          id="partner-title"
+          tone="leaf"
+          title="Partner *with us.*"
+          text="Organizations, schools, and institutions — let’s talk about co-creating programs, sites, and learning."
+        >
+          <Btn href={`mailto:${settings.contactEmail}?subject=Partnership%20with%20FARE%20Farms`} variant="sun" icon="mail">
+            {settings.contactEmail}
+          </Btn>
+        </Cta>
+      </div>
     </>
   )
 }

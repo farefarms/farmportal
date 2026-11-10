@@ -5,6 +5,9 @@ import type { ReactNode } from 'react'
 
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
+import { Motion } from '@/components/Motion'
+import { Logo } from '@/components/ui'
+import { getSiteSettings } from '@/lib/queries'
 import { DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site'
 import './globals.css'
 
@@ -20,17 +23,28 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: '#1F4D35' }
 
-export default function FrontendLayout({ children }: { children: ReactNode }) {
+export default async function FrontendLayout({ children }: { children: ReactNode }) {
   const plausible = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN
+  const settings = await getSiteSettings()
   return (
     <html lang="en-CA" className={`${bricolage.variable} ${inter.variable}`}>
       <body>
         <a className="skip-link" href="#main">
           Skip to content
         </a>
-        <Header />
+        {/* First-load curtain (pure CSS; hidden for reduced motion). */}
+        <div className="intro grain" aria-hidden="true">
+          <span className="intro__mark brand">
+            <Logo size={48} />
+            <span className="brand__name" style={{ color: 'var(--cream)' }}>
+              FARE Farms<span className="brand__dot">.</span>
+            </span>
+          </span>
+        </div>
+        <Header email={settings.contactEmail} place={settings.gardenName ? `${settings.gardenName}` : 'Vancouver, BC'} />
         <main id="main">{children}</main>
         <Footer />
+        <Motion />
         {plausible ? (
           // Cookie-free, privacy-friendly analytics — only loaded when configured.
           <Script defer data-domain={plausible} src="https://plausible.io/js/script.js" strategy="afterInteractive" />

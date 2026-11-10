@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 
+import { PageHero } from '@/components/ui'
 import { getSiteSettings } from '@/lib/queries'
 
 export const metadata: Metadata = {
@@ -11,9 +12,10 @@ export const metadata: Metadata = {
 export default async function AccessibilityPage() {
   const settings = await getSiteSettings()
   return (
-    <section className="theme-cream section">
-      <div className="container prose" style={{ maxWidth: 760 }}>
-        <h1 className="h1" style={{ marginBottom: 24 }}>Accessibility</h1>
+    <>
+      <PageHero id="a11y-title" compact eyebrow="Accessibility" title="Built so *everyone* can learn with us." intro="Our commitment to an accessible website — and accessible gardens." />
+      <section className="wrap wrap--narrow sec">
+      <div className="prose">
         <p>
           We want everyone to be able to learn with us, whatever device, browser or assistive technology they use. This website is built to meet the Web Content Accessibility Guidelines (WCAG) 2.2 at level AA.
         </p>
@@ -31,6 +33,7 @@ export default async function AccessibilityPage() {
           If something on this site is hard to use, please email <a href={`mailto:${settings.contactEmail}`}>{settings.contactEmail}</a>. We’ll respond and fix it.
         </p>
       </div>
-    </section>
+      </section>
+    </>
   )
 }

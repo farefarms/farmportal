@@ -2,27 +2,42 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { type CSSProperties, useEffect, useRef } from 'react'
 
-import { NAV } from '@/lib/site'
-import { Logo, SearchIcon } from './ui'
+import { initMenu, type MenuApi } from '@/lib/enhance/menu'
+import { MENU, NAV, POSITIONING } from '@/lib/site'
+import { Icon, Logo, Photo } from './ui'
 
 const isCurrent = (pathname: string, href: string) => (href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`))
 
-export function Header() {
+const DEFAULT_CAPTION = 'Afro-Indigenous agricultural heritage, growing on the coast.'
+
+export function Header({ email = 'hello@farefarms.ca', place = 'Vancouver, BC' }: { email?: string; place?: string }) {
   const pathname = usePathname() || '/'
+  const ref = useRef<HTMLElement>(null)
+  const menu = useRef<MenuApi | null>(null)
+
+  useEffect(() => {
+    menu.current = ref.current ? initMenu(ref.current) : null
+    return () => menu.current?.destroy()
+  }, [])
+  useEffect(() => {
+    menu.current?.close(false)
+  }, [pathname])
+
   return (
-    <header className="site-header">
-      <div className="container site-header__inner">
-        <Link href="/" className="wordmark" aria-label="FARE Farms home">
+    <header ref={ref} className="hdr">
+      <div className="hdr__bar">
+        <Link href="/" className="brand" aria-label="FARE Farms — home">
           <Logo />
-          <span>
-            FARE<span className="wordmark__dot">.</span>FARMS
+          <span className="brand__name" aria-hidden="true">
+            FARE Farms<span className="brand__dot">.</span>
           </span>
         </Link>
 
-        <nav aria-label="Primary">
-          <ul className="nav">
-            {NAV.map((item) => (
+        <nav className="hdr__nav" aria-label="Primary">
+          <ul>
+            {NAV.filter((n) => n.href !== '/').map((item) => (
               <li key={item.href}>
                 <Link href={item.href} aria-current={isCurrent(pathname, item.href) ? 'page' : undefined}>
                   {item.label}
@@ -32,39 +47,74 @@ export function Header() {
           </ul>
         </nav>
 
-        <div className="header-actions">
-          <Link href="/learn" className="icon-btn" aria-label="Search the Knowledge Library">
-            <SearchIcon />
+        <div className="hdr__actions">
+          <Link href="/learn" className="hdr__search" aria-label="Search the Knowledge Library">
+            <Icon name="search" size={17} />
           </Link>
-          <Link href="/get-involved" className="btn btn--primary btn--sm">
-            Get Involved
+          <Link href="/get-involved" className="hdr__cta">
+            Get Involved <Icon name="arrow-up-right" />
           </Link>
-          {/* Small screens: a no-JS disclosure menu. Keyed on the path so it closes after navigating. */}
-          <details className="mobile-nav" key={pathname}>
-            <summary className="icon-btn" aria-label="Menu">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-                <path d="M4 7h16M4 12h16M4 17h16" />
-              </svg>
-            </summary>
-            <div className="mobile-nav__panel">
-              <nav aria-label="Mobile">
-                <ul>
-                  {NAV.map((item) => (
+          <button type="button" className="menu-btn" data-menu-toggle aria-expanded="false" aria-controls="site-menu">
+            <span className="menu-btn__label" data-menu-label>
+              Menu
+            </span>
+            <span className="menu-btn__icon" aria-hidden="true">
+              <span />
+              <span />
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div className="menu" id="site-menu" data-menu hidden>
+        <div className="grain" style={{ minHeight: '100%' }}>
+          <div className="menu__inner">
+            <div className="menu__visual" aria-hidden="true">
+              <Photo tone="leaf" art="sprout" label={false} style={{ position: 'absolute', inset: 0 }} />
+              <p className="menu__caption" data-menu-caption>
+                {DEFAULT_CAPTION}
+              </p>
+            </div>
+            <div className="menu__body">
+              <nav aria-label="Site menu">
+                <ul className="menu__list">
+                  {MENU.map((item, i) => (
                     <li key={item.href}>
-                      <Link href={item.href} aria-current={isCurrent(pathname, item.href) ? 'page' : undefined}>
-                        {item.label}
+                      <Link
+                        href={item.href}
+                        className="menu__link"
+                        data-blurb={item.blurb}
+                        aria-current={isCurrent(pathname, item.href) ? 'page' : undefined}
+                        style={{ '--i': i } as CSSProperties}
+                      >
+                        <span className="menu__no" aria-hidden="true">
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span className="menu__text">
+                          <span className="menu__label">{item.label}</span>
+                          <span className="menu__blurb">{item.blurb}</span>
+                        </span>
+                        <span className="menu__arrow" aria-hidden="true">
+                          <Icon name="arrow-up-right" />
+                        </span>
                       </Link>
                     </li>
                   ))}
-                  <li>
-                    <Link href="/get-involved" aria-current={isCurrent(pathname, '/get-involved') ? 'page' : undefined}>
-                      Get Involved
-                    </Link>
-                  </li>
                 </ul>
               </nav>
+              <div className="menu__foot">
+                <p>{POSITIONING} An Afro-Indigenous-centred land and food initiative.</p>
+                <div className="menu__contact">
+                  <a href={`mailto:${email}`}>
+                    <Icon name="mail" /> {email}
+                  </a>
+                  <span>
+                    <Icon name="map-pin" /> {place}
+                  </span>
+                </div>
+              </div>
             </div>
-          </details>
+          </div>
         </div>
       </div>
     </header>

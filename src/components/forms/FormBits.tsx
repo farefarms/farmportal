@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useEffect, useRef, type ReactNode } from 'react'
 
 import type { FormState } from '@/lib/forms'
+import { Icon } from '../ui'
 
 /** Hidden spam traps: a honeypot field and a render timestamp (set after hydration). */
 export function SpamTraps() {
@@ -41,7 +42,7 @@ export function Field({
     <div className="field">
       <label htmlFor={id}>{label}</label>
       {children}
-      {hint ? <span className="tiny" id={`${id}-hint`}>{hint}</span> : null}
+      {hint ? <span className="field-hint" id={`${id}-hint`}>{hint}</span> : null}
       {error ? (
         <span className="field-error" id={`${id}-error`}>
           {error}
@@ -57,7 +58,7 @@ export const errorProps = (state: FormState, name: string, id: string) =>
 
 export function Consent({ id, text, error }: { id: string; text: string; error?: string }) {
   return (
-    <div className="stack" style={{ gap: 4 }}>
+    <div className="stack" style={{ gap: '0.25rem' }}>
       <label className="choice" htmlFor={id}>
         <input id={id} name="consent" type="checkbox" value="yes" required aria-invalid={error ? true : undefined} />
         <span>{text}</span>
@@ -85,5 +86,17 @@ export function FormStatus({ state }: { state: FormState }) {
         </p>
       ) : null}
     </div>
+  )
+}
+
+/** Pill submit button with the circular arrow badge. */
+export function SubmitButton({ children, variant = 'leaf', pending }: { children: ReactNode; variant?: 'leaf' | 'sun' | 'clay' | 'soil'; pending?: boolean }) {
+  return (
+    <button type="submit" className={`btn btn--${variant} self-start`} disabled={pending} aria-disabled={pending || undefined}>
+      <span>{pending ? 'Sending…' : children}</span>
+      <span className="btn__icon">
+        <Icon name="arrow-up-right" />
+      </span>
+    </button>
   )
 }

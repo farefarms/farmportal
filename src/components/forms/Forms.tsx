@@ -4,7 +4,8 @@ import { useActionState } from 'react'
 
 import { contribute, producerInterest, registerForEvent, subscribe, volunteer } from '@/app/(frontend)/actions'
 import { CONSENT, initialFormState } from '@/lib/forms'
-import { Consent, DataNotice, errorProps, Field, FormStatus, SpamTraps } from './FormBits'
+import { Icon } from '../ui'
+import { Consent, DataNotice, errorProps, Field, FormStatus, SpamTraps, SubmitButton } from './FormBits'
 
 /* ---------- Email sign-up (newsletter or marketplace) ---------- */
 
@@ -12,20 +13,33 @@ export function SubscribeForm({ list = 'newsletter', dark = false, idPrefix = 's
   const [state, action, pending] = useActionState(subscribe, initialFormState)
   const emailId = `${idPrefix}-email`
   if (state.status === 'success') return <FormStatus state={state} />
+  const invalid = Boolean(state.errors?.email)
   return (
-    <form action={action} className={`form${dark ? ' form--dark' : ''}`} noValidate>
+    <form action={action} className={`form${dark ? ' form--dark' : ''}`} noValidate style={{ gap: '0.875rem' }}>
       <SpamTraps />
       <input type="hidden" name="list" value={list} />
-      <div className="row" style={{ alignItems: 'flex-end' }}>
-        <div style={{ flex: '1 1 240px', minWidth: 0 }}>
-          <Field id={emailId} label="Email address" error={state.errors?.email}>
-            <input id={emailId} name="email" type="email" autoComplete="email" required {...errorProps(state, 'email', emailId)} />
-          </Field>
-        </div>
-        <button type="submit" className="btn btn--primary" disabled={pending}>
-          {list === 'marketplace' ? 'Notify me' : 'Subscribe'}
+      <label htmlFor={emailId} className="sr-only">
+        Email address
+      </label>
+      <div className="pill-field" data-invalid={invalid || undefined}>
+        <input
+          id={emailId}
+          name="email"
+          type="email"
+          autoComplete="email"
+          placeholder="you@example.com"
+          required
+          {...errorProps(state, 'email', emailId)}
+        />
+        <button type="submit" className="pill-btn" disabled={pending}>
+          {list === 'marketplace' ? 'Notify me' : 'Subscribe'} <Icon name="arrow-right" />
         </button>
       </div>
+      {invalid ? (
+        <span className="field-error" id={`${emailId}-error`}>
+          {state.errors?.email}
+        </span>
+      ) : null}
       <Consent id={`${idPrefix}-consent`} text={CONSENT[list]} error={state.errors?.consent} />
       <DataNotice />
       <FormStatus state={state} />
@@ -50,7 +64,7 @@ export function VolunteerForm() {
         <Field id="v-email" label="Email" error={state.errors?.email}>
           <input id="v-email" name="email" type="email" autoComplete="email" required {...errorProps(state, 'email', 'v-email')} />
         </Field>
-        <Field id="v-phone" label={<>Phone <span style={{ fontWeight: 400 }}>(optional)</span></>}>
+        <Field id="v-phone" label={<>Phone <span style={{ opacity: 0.75 }}>(optional)</span></>}>
           <input id="v-phone" name="phone" type="tel" autoComplete="tel" />
         </Field>
         <Field id="v-role" label="How would you like to help?">
@@ -61,15 +75,15 @@ export function VolunteerForm() {
           </select>
         </Field>
       </div>
-      <Field id="v-message" label={<>Anything we should know? <span style={{ fontWeight: 400 }}>(optional)</span></>}>
+      <Field id="v-message" label={<>Anything we should know? <span style={{ opacity: 0.75 }}>(optional)</span></>}>
         <textarea id="v-message" name="message" rows={3} />
       </Field>
       <Consent id="v-consent" text={CONSENT.volunteer} error={state.errors?.consent} />
       <DataNotice />
       <FormStatus state={state} />
-      <button type="submit" className="btn btn--forest" style={{ alignSelf: 'flex-start' }} disabled={pending}>
+      <SubmitButton variant="clay" pending={pending}>
         Sign me up
-      </button>
+      </SubmitButton>
     </form>
   )
 }
@@ -83,7 +97,7 @@ export function ContributeForm() {
     <form action={action} className="form form--dark" noValidate>
       <SpamTraps />
       <div className="form-grid">
-        <Field id="k-name" label={<>Name <span style={{ fontWeight: 400 }}>(optional)</span></>}>
+        <Field id="k-name" label={<>Name <span style={{ opacity: 0.75 }}>(optional)</span></>}>
           <input id="k-name" name="name" type="text" autoComplete="name" />
         </Field>
         <Field id="k-email" label="Email" error={state.errors?.email}>
@@ -102,7 +116,7 @@ export function ContributeForm() {
       <Field id="k-description" label="Tell us a little about it" error={state.errors?.description}>
         <textarea id="k-description" name="description" rows={4} required {...errorProps(state, 'description', 'k-description')} />
       </Field>
-      <div className="row" style={{ alignItems: 'flex-start', gap: '14px 32px' }}>
+      <div className="row" style={{ alignItems: 'flex-start', gap: '1rem 2rem' }}>
         <fieldset className="fieldset">
           <legend>Who can see it?</legend>
           <label className="choice"><input type="radio" name="scope" value="public" defaultChecked /> Public</label>
@@ -118,9 +132,9 @@ export function ContributeForm() {
       <Consent id="k-consent" text={CONSENT.contribute} error={state.errors?.consent} />
       <DataNotice>We talk with you before anything is shared, record your consent, and remove your contribution whenever you ask.</DataNotice>
       <FormStatus state={state} />
-      <button type="submit" className="btn btn--primary" style={{ alignSelf: 'flex-start' }} disabled={pending}>
+      <SubmitButton variant="sun" pending={pending}>
         Submit for review
-      </button>
+      </SubmitButton>
     </form>
   )
 }
@@ -161,9 +175,9 @@ export function ProducerForm({ categories }: { categories: string[] }) {
       <Consent id="p-consent" text={CONSENT.producer} error={state.errors?.consent} />
       <DataNotice />
       <FormStatus state={state} />
-      <button type="submit" className="btn btn--forest" style={{ alignSelf: 'flex-start' }} disabled={pending}>
+      <SubmitButton variant="leaf" pending={pending}>
         Send my interest
-      </button>
+      </SubmitButton>
     </form>
   )
 }
@@ -185,15 +199,15 @@ export function RegisterForm({ eventId }: { eventId: string }) {
           <input id="r-email" name="email" type="email" autoComplete="email" required {...errorProps(state, 'email', 'r-email')} />
         </Field>
       </div>
-      <Field id="r-access" label={<>Access needs <span style={{ fontWeight: 400 }}>(optional)</span></>}>
+      <Field id="r-access" label={<>Access needs <span style={{ opacity: 0.75 }}>(optional)</span></>}>
         <textarea id="r-access" name="accessibilityNeeds" rows={2} />
       </Field>
       <Consent id="r-consent" text={CONSENT.event} error={state.errors?.consent} />
       <DataNotice />
       <FormStatus state={state} />
-      <button type="submit" className="btn btn--dark" style={{ alignSelf: 'flex-start' }} disabled={pending}>
-        Register
-      </button>
+      <SubmitButton variant="sun" pending={pending}>
+        Count me in
+      </SubmitButton>
     </form>
   )
 }

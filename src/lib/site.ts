@@ -15,6 +15,18 @@ export const NAV = [
   { label: 'Marketplace', href: '/marketplace' },
 ] as const
 
+/** The full-screen menu: every main section plus Get Involved, each with a one-line preview. */
+export const MENU = [
+  { label: 'Home', href: '/', blurb: 'Start here — who we are and what we grow' },
+  { label: 'Our Roots', href: '/our-roots', blurb: 'Our story, our values and the growers before us' },
+  { label: 'Learn', href: '/learn', blurb: 'The Knowledge Library: crops, guides and heritage' },
+  { label: 'Land & Gardens', href: '/land-and-gardens', blurb: 'Trillium Park and the gardens we tend' },
+  { label: 'Food & Culture', href: '/food-and-culture', blurb: 'Recipes, foodways and stories held with care' },
+  { label: 'Events & Community', href: '/events', blurb: 'Workshops, harvest days and gatherings' },
+  { label: 'Marketplace', href: '/marketplace', blurb: 'Coming soon — from local growers and makers' },
+  { label: 'Get Involved', href: '/get-involved', blurb: 'Volunteer, partner or share your knowledge' },
+] as const
+
 export const RESOURCE_TYPE_LABELS: Record<string, string> = {
   article: 'Heritage article',
   guide: 'Guide',

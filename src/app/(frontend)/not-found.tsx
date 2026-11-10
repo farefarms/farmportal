@@ -1,17 +1,16 @@
-import Link from 'next/link'
+import { Btn, PageHero } from '@/components/ui'
 
 export default function NotFound() {
   return (
-    <section className="theme-cream section">
-      <div className="container stack" style={{ gap: 20, alignItems: 'flex-start' }}>
-        <p className="eyebrow">404</p>
-        <h1 className="h1">This bed is still resting.</h1>
-        <p className="lede">We couldn’t find that page. It may have moved, or it hasn’t been published yet.</p>
-        <div className="row">
-          <Link href="/" className="btn btn--dark">Go home</Link>
-          <Link href="/learn" className="btn btn--outline">Search the Knowledge Library</Link>
-        </div>
+    <PageHero id="nf-title" eyebrow="404" title="This bed is *still resting.*" intro="We couldn’t find that page. It may have moved, or it hasn’t been published yet.">
+      <div className="row">
+        <Btn href="/" variant="sun">
+          Go home
+        </Btn>
+        <Btn href="/learn" variant="line-light" icon="search">
+          Search the Knowledge Library
+        </Btn>
       </div>
-    </section>
+    </PageHero>
   )
 }

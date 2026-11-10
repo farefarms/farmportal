@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import type { CSSProperties } from 'react'
 
 import { JsonLd } from '@/components/JsonLd'
 import { ProvenanceCard, SourcesList } from '@/components/Provenance'
 import { RichText } from '@/components/RichText'
-import { Photo } from '@/components/ui'
+import { Btn, Eyebrow, Icon, PageHero, Photo, PhotoCredit } from '@/components/ui'
 import { getResource } from '@/lib/queries'
 import { absoluteUrl, RESOURCE_TYPE_LABELS } from '@/lib/site'
 
@@ -52,36 +53,38 @@ export default async function ResourcePage({ params }: { params: Params }) {
           ...(r.review?.sources?.length ? { citation: r.review.sources.map((s) => s.url || s.citation) } : {}),
         }}
       />
-      <header className="theme-cream">
-        <div className="container stack" style={{ paddingBlock: '28px 48px', gap: 20 }}>
-          <nav aria-label="Breadcrumb" className="breadcrumb">
-            <ol>
-              <li><Link href="/learn">Learn</Link></li>
-              <li aria-hidden="true">/</li>
-              <li aria-current="page">{r.title}</li>
-            </ol>
-          </nav>
-          <div className="row" style={{ gap: 10 }}>
-            <span className="pill pill--forest">{typeLabel}</span>
-            {(r.topics ?? []).map((t) => (
-              <Link key={t.id} href={`/learn?topic=${t.slug}#results`} className="pill pill--outline tiny" style={{ textDecoration: 'none', color: 'var(--clay)' }}>
-                {t.name}
-              </Link>
-            ))}
-            {r.readingTime ? <span className="tiny" style={{ color: 'var(--muted)' }}>{r.readingTime}</span> : null}
-          </div>
-          <h1 className="h1" style={{ maxWidth: 960 }}>{r.title}</h1>
-          <p className="lede" style={{ maxWidth: 760 }}>{r.summary}</p>
-          {r.region ? <p className="tiny" style={{ margin: 0, color: 'var(--muted)' }}>Region / community: {r.region}</p> : null}
+      <PageHero
+        id="res-title"
+        compact
+        tone={r.type === 'story_series' ? 'soil' : 'leaf'}
+        eyebrow={`${typeLabel}${r.readingTime ? ` · ${r.readingTime}` : ''}`}
+        title={r.title}
+        intro={r.summary}
+        crumbs={[{ label: 'Learn', href: '/learn' }, { label: r.title }]}
+      >
+        <div className="row" style={{ '--gap': '0.5rem' } as CSSProperties}>
+          {(r.topics ?? []).map((t) => (
+            <Link key={t.id} href={`/learn?topic=${t.slug}#results`} className="filter" style={{ minHeight: '2.25rem', fontSize: '0.875rem' }}>
+              {t.name}
+            </Link>
+          ))}
+          {r.region ? <span className="small" style={{ color: 'rgb(244 237 225 / 0.85)', marginLeft: '0.5rem' }}>Region / community: {r.region}</span> : null}
         </div>
-      </header>
+      </PageHero>
 
-      <div className="theme-cream" style={{ background: 'var(--card)', borderTop: '1px solid var(--line)' }}>
-        <div className="container row section" style={{ alignItems: 'flex-start', gap: '48px 72px' }}>
-          <div className="stack" style={{ flex: '1 1 620px', minWidth: 0, gap: 40 }}>
-            {r.heroImage ? <Photo media={r.heroImage} height="clamp(260px, 32vw, 440px)" /> : null}
+      <div className="wrap sec">
+        <div className="split split--aside">
+          <div className="stack" style={{ '--gap': '3rem', minWidth: 0 } as CSSProperties}>
+            {r.heroImage ? (
+              <figure style={{ margin: 0 }}>
+                <div style={{ position: 'relative', aspectRatio: '16 / 10', borderRadius: '2rem', overflow: 'hidden' }}>
+                  <Photo media={r.heroImage} style={{ position: 'absolute', inset: 0 }} />
+                </div>
+                <PhotoCredit media={r.heroImage} />
+              </figure>
+            ) : null}
             {video ? (
-              <div style={{ position: 'relative', paddingTop: '56.25%', borderRadius: 22, overflow: 'hidden', background: 'var(--ink)' }}>
+              <div style={{ position: 'relative', paddingTop: '56.25%', borderRadius: '2rem', overflow: 'hidden', background: 'var(--soil)' }}>
                 <iframe
                   src={video}
                   title={r.title}
@@ -93,42 +96,63 @@ export default async function ResourcePage({ params }: { params: Params }) {
               </div>
             ) : null}
             {r.historicalContext ? (
-              <section aria-labelledby="history-title">
-                <h2 id="history-title" className="h3" style={{ marginBottom: 14 }}>Historical context</h2>
-                <RichText data={r.historicalContext} />
+              <section aria-labelledby="history-title" className="card card--muted card--lg">
+                <Eyebrow>Before we begin</Eyebrow>
+                <h2 id="history-title" className="h-md mt-4">
+                  Historical context
+                </h2>
+                <div className="prose mt-5">
+                  <RichText data={r.historicalContext} />
+                </div>
               </section>
             ) : null}
-            <RichText data={r.body} />
+            <div className="prose">
+              <RichText data={r.body} />
+            </div>
             {r.file?.url ? (
-              <a href={r.file.url} className="btn btn--forest" style={{ alignSelf: 'flex-start' }} download>
+              <Btn href={r.file.url} variant="leaf" icon="download" download>
                 Download {r.file.filename ?? 'file'}
-              </a>
+              </Btn>
             ) : null}
             <SourcesList review={r.review} />
           </div>
-          <aside aria-label="About this resource" className="stack" style={{ flex: '0 1 340px', minWidth: 0, gap: 16 }}>
+          <aside aria-label="About this resource" className="stack" style={{ '--gap': '1rem', position: 'sticky', top: '6.5rem' } as CSSProperties}>
             <ProvenanceCard review={r.review} />
             {r.relatedCrops?.length || r.relatedResources?.length ? (
-              <div className="card" style={{ padding: 24 }}>
-                <h2 className="tiny" style={{ margin: '0 0 10px', color: 'var(--clay)', fontWeight: 600 }}>Related in the library</h2>
-                <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+              <div className="card">
+                <h2 className="eyebrow">Related</h2>
+                <ul className="lines mt-4" style={{ border: 0 }}>
                   {(r.relatedCrops ?? []).map((c) => (
                     <li key={`c-${c.id}`}>
-                      <Link href={`/learn/crops/${c.slug}`} className="h4" style={{ display: 'block', padding: '8px 0', fontSize: 19, textDecoration: 'none' }}>
-                        {c.name}
+                      <Link href={`/learn/crops/${c.slug}`} className="lines__row" style={{ paddingBlock: '0.875rem' }}>
+                        <span className="lines__title" style={{ fontSize: '1.125rem', flex: 1 }}>
+                          {c.name}
+                        </span>
+                        <Icon name="arrow-up-right" />
                       </Link>
                     </li>
                   ))}
                   {(r.relatedResources ?? []).map((x) => (
                     <li key={`r-${x.id}`}>
-                      <Link href={`/learn/${x.slug}`} className="h4" style={{ display: 'block', padding: '8px 0', fontSize: 19, textDecoration: 'none' }}>
-                        {x.title}
+                      <Link href={`/learn/${x.slug}`} className="lines__row" style={{ paddingBlock: '0.875rem' }}>
+                        <span className="lines__title" style={{ fontSize: '1.125rem', flex: 1 }}>
+                          {x.title}
+                        </span>
+                        <Icon name="arrow-up-right" />
                       </Link>
                     </li>
                   ))}
                 </ul>
               </div>
             ) : null}
+            <Link href="/get-involved#contribute" className="card card--sun" style={{ display: 'block' }}>
+              <span className="card__title" style={{ display: 'block' }}>
+                Something to add or correct?
+              </span>
+              <span className="small mt-2" style={{ display: 'block' }}>
+                Tell us — community knowledge keeps this library honest.
+              </span>
+            </Link>
           </aside>
         </div>
       </div>

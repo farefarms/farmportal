@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import type { CSSProperties } from 'react'
 
 import { ProducerForm, SubscribeForm } from '@/components/forms/Forms'
-import { Eyebrow, SectionHead } from '@/components/ui'
+import { Eyebrow, pad2, PageHero, SectionHead, SproutMark, Words } from '@/components/ui'
 import { getMarketplace } from '@/lib/queries'
 
 export const revalidate = 300
@@ -20,7 +20,7 @@ const PHASES = [
   { n: '4', title: 'Community marketplace', text: 'Multiple producers, approvals, commissions, and local pickup.' },
 ]
 
-const CAT_COLORS = ['c-forest', 'c-clay', 'c-marigold', 'c-soil', 'c-leaf']
+const CAT_BG = ['var(--leaf)', 'var(--clay)', 'var(--sun)', 'var(--soil)', '#2d6146']
 
 export default async function MarketplacePage() {
   const market = await getMarketplace()
@@ -29,67 +29,75 @@ export default async function MarketplacePage() {
 
   return (
     <>
-      <section id="updates" className="theme-soil" aria-labelledby="mk-title">
-        <div className="container row" style={{ paddingBlock: 'clamp(48px, 5vw, 88px) clamp(56px, 6vw, 96px)', gap: '48px 72px' }}>
-          <div className="stack" style={{ flex: '1 1 560px', minWidth: 0, gap: 22, alignItems: 'flex-start' }}>
-            <span className="pill pill--marigold">Coming soon</span>
-            <h1 id="mk-title" className="display" style={{ fontSize: 'clamp(52px, 6.4vw, 96px)', lineHeight: 0.98 }}>
-              FARE <span className="accent">Marketplace</span>
-            </h1>
-            <p className="lede">{market.intro}</p>
-            <p className="body-muted small" style={{ margin: 0 }}>We’re not taking orders yet — sign up to hear first when we open.</p>
-            <div style={{ width: '100%', maxWidth: 560 }}>
-              <SubscribeForm list="marketplace" dark idPrefix="mk" />
-            </div>
-          </div>
-          <svg aria-hidden="true" width="320" height="320" viewBox="0 0 340 340" style={{ flex: '0 1 320px', maxWidth: '100%', height: 'auto' }}>
-            <circle cx="170" cy="170" r="160" fill="none" stroke="#E3A93C" strokeWidth="2" />
-            <circle cx="170" cy="170" r="104" fill="#E3A93C" />
-            <path d="M170 228 V150" stroke="#1F4D35" strokeWidth="6" strokeLinecap="round" />
-            <path d="M170 196 C144 196 126 180 126 156 C152 156 170 172 170 196 Z" fill="#1F4D35" />
-            <path d="M170 172 C170 144 188 124 216 124 C216 150 198 172 170 172 Z" fill="#2D6146" />
-          </svg>
+      <PageHero id="mk-title" tone="soil" eyebrow="Coming soon" title="FARE *Marketplace.*" intro={market.intro}>
+        <div id="updates" style={{ maxWidth: '34rem', scrollMarginTop: '8rem' }}>
+          <p className="small" style={{ color: 'rgb(244 237 225 / 0.85)', marginBottom: '0.875rem' }}>
+            We’re not taking orders yet — sign up to hear first when we open.
+          </p>
+          <SubscribeForm list="marketplace" dark idPrefix="mk" />
         </div>
+      </PageHero>
+
+      <section className="wrap sec" aria-labelledby="find-title">
+        <SectionHead
+          eyebrow="What you’ll find"
+          id="find-title"
+          title="Rooted in *learning.*"
+          intro="Every product will link to what it teaches — crop profiles, growing guides, and the stories behind it — and support community growers and makers."
+        />
+        <ul className="cols cols--auto" style={{ listStyle: 'none', margin: 0, padding: 0, '--min': '13rem' } as CSSProperties}>
+          {categories.map((c, i) => (
+            <li
+              key={c}
+              className="grain"
+              data-reveal
+              style={
+                {
+                  '--d': `${(i % 5) * 0.06}s`,
+                  minHeight: '15rem',
+                  borderRadius: '2rem',
+                  padding: '1.75rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  background: CAT_BG[i % CAT_BG.length],
+                  color: CAT_BG[i % CAT_BG.length] === 'var(--sun)' ? 'var(--soil)' : 'var(--cream)',
+                } as CSSProperties
+              }
+            >
+              <span className="row" style={{ justifyContent: 'space-between' }}>
+                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '0.875rem' }}>{pad2(i + 1)}</span>
+                <SproutMark className="marquee__sprout sprout--inherit" />
+              </span>
+              <span className="card__title">{c}</span>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      <section className="theme-cream section" aria-labelledby="find-title">
-        <div className="container">
+      <section className="on-muted sec" aria-labelledby="road-title">
+        <div className="wrap">
           <SectionHead
-            eyebrow="What you’ll find"
-            id="find-title"
-            title="Rooted in learning."
-            intro="Every product will link to what it teaches — crop profiles, growing guides, and the stories behind it — and support community growers and makers."
+            eyebrow="Roadmap"
+            id="road-title"
+            title="How the marketplace *will grow.*"
+            intro="Checkout opens only once food and seed regulations, taxes, privacy, payments, shipping, refunds, and producer agreements are in place."
           />
-          <ul className="grid" style={{ listStyle: 'none', margin: 0, padding: 0, '--min': '220px' } as CSSProperties}>
-            {categories.map((c, i) => (
-              <li key={c} className={`pillar ${CAT_COLORS[i % CAT_COLORS.length]}`} style={{ minHeight: 200 }}>
-                <span className="tiny" style={{ fontWeight: 600 }}>{String(i + 1).padStart(2, '0')}</span>
-                <span className="h4" style={{ fontSize: 24 }}>{c}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="theme-paper section" aria-labelledby="road-title">
-        <div className="container">
-          <div className="split mt-section-head">
-            <h2 id="road-title" className="h2 split__main" style={{ fontSize: 'clamp(34px, 3.6vw, 52px)' }}>How the marketplace will grow</h2>
-            <p className="split__side body-muted">
-              Checkout opens only once food and seed regulations, taxes, privacy, payments, shipping, refunds, and producer agreements are in place.
-            </p>
-          </div>
-          <ol className="grid" style={{ listStyle: 'none', margin: 0, padding: 0, '--min': '240px' } as CSSProperties}>
+          <ol className="cells cells--4" data-reveal>
             {PHASES.map((p) => {
               const now = p.n === current
               return (
-                <li key={p.n} className={now ? 'panel theme-forest stack' : 'card panel stack'} style={{ gap: 10, padding: 24 }} aria-current={now ? 'step' : undefined}>
+                <li key={p.n} className="cell" aria-current={now ? 'step' : undefined} style={now ? { background: 'var(--leaf)', color: 'var(--cream)' } : undefined}>
                   <span className="row" style={{ justifyContent: 'space-between' }}>
-                    <span className="tiny" style={{ fontWeight: 600 }}>Phase {p.n}</span>
-                    {now ? <span className="pill pill--marigold">Now</span> : null}
+                    <span className="cell__no" style={now ? { color: 'var(--sun)' } : undefined}>
+                      Phase {p.n}
+                    </span>
+                    {now ? <span className="tag">Now</span> : null}
                   </span>
-                  <h3 className="h4">{p.title}</h3>
-                  <p className="small" style={{ margin: 0 }}>{p.text}</p>
+                  <h3 className="h-sm mt-6">{p.title}</h3>
+                  <p className="mt-3" style={{ color: now ? 'rgb(244 237 225 / 0.85)' : 'var(--muted-fg)' }}>
+                    {p.text}
+                  </p>
                 </li>
               )
             })}
@@ -97,16 +105,17 @@ export default async function MarketplacePage() {
         </div>
       </section>
 
-      <section id="producers" className="theme-forest section" aria-labelledby="prod-title">
-        <div className="container row" style={{ alignItems: 'flex-start', gap: '40px 72px' }}>
-          <div className="stack" style={{ flex: '1 1 380px', minWidth: 0, gap: 18 }}>
+      <section id="producers" className="on-leaf grain sec" aria-labelledby="prod-title">
+        <div className="mudcloth layer" aria-hidden="true" />
+        <div className="wrap split">
+          <div>
             <Eyebrow>Producer interest</Eyebrow>
-            <h2 id="prod-title" className="h2" style={{ marginTop: -18 }}>
-              Grow or make something <span className="accent">we should carry?</span>
-            </h2>
-            <p className="lede">We’re building the marketplace with local growers, farmers, and artisans. Tell us about your work.</p>
+            <Words id="prod-title" className="h-lg mt-6" text="Grow or make something *we should carry?*" />
+            <p className="lead mt-6" data-reveal>
+              We’re building the marketplace with local growers, farmers, and artisans. Tell us about your work.
+            </p>
           </div>
-          <div className="card panel" style={{ flex: '1 1 520px', minWidth: 0 }}>
+          <div className="form-panel" style={{ color: 'var(--soil)' }} data-reveal>
             <ProducerForm categories={categories} />
           </div>
         </div>

@@ -3,10 +3,11 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { CSSProperties } from 'react'
 
+import { cropArt, cropTone } from '@/components/cards'
 import { JsonLd } from '@/components/JsonLd'
 import { ProvenanceCard, SourcesList } from '@/components/Provenance'
 import { RichText } from '@/components/RichText'
-import { Eyebrow, LinkArrow, Photo } from '@/components/ui'
+import { Eyebrow, Icon, pad2, PageHero, Photo, PhotoCredit } from '@/components/ui'
 import { getCrop, listCrops } from '@/lib/queries'
 import { absoluteUrl } from '@/lib/site'
 
@@ -54,133 +55,153 @@ export default async function CropPage({ params }: { params: Params }) {
           ...(crop.review?.contributor ? { author: { '@type': 'Person', name: crop.review.contributor } } : {}),
         }}
       />
-      <div className="theme-cream">
-        <div className="container" style={{ paddingTop: 28 }}>
-          <nav aria-label="Breadcrumb" className="breadcrumb">
-            <ol>
-              <li><Link href="/learn">Learn</Link></li>
-              <li aria-hidden="true">/</li>
-              <li><Link href="/learn/crops">Heritage crop directory</Link></li>
-              <li aria-hidden="true">/</li>
-              <li aria-current="page">{crop.name}</li>
-            </ol>
-          </nav>
-        </div>
-        <header className="container row" style={{ paddingBlock: '36px 56px', alignItems: 'stretch', gap: '40px 64px' }}>
-          <div className="stack" style={{ flex: '1 1 560px', minWidth: 0, gap: 22 }}>
-            <Eyebrow>Crop profile{index >= 0 ? ` · No. ${String(index + 1).padStart(2, '0')}` : ''}</Eyebrow>
-            <div>
-              <h1 className="display" style={{ fontSize: 'clamp(72px, 9vw, 132px)', lineHeight: 0.9, color: 'var(--forest)', marginTop: -10 }}>
-                {crop.name}
-              </h1>
-              <p className="sci" style={{ margin: '14px 0 0', fontSize: 24, color: 'var(--body-text)' }}>{crop.scientificName}</p>
-            </div>
-            <p className="lede">{crop.summary}</p>
-            {crop.regionalNames?.length ? (
-              <div>
-                <p className="tiny" style={{ margin: '0 0 10px', color: 'var(--muted)', fontWeight: 500 }}>Regional names</p>
-                <ul className="row" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 8 }}>
-                  {crop.regionalNames.map((n) => (
-                    <li key={`${n.name}-${n.language}`} className="card" style={{ padding: '8px 14px', borderRadius: 999, fontSize: 15 }}>
-                      <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>{n.name}</span> · {n.language}
-                    </li>
-                  ))}
-                </ul>
+      <PageHero
+        id="crop-title"
+        compact
+        eyebrow={`Crop profile${index >= 0 ? ` · No. ${pad2(index + 1)}` : ''}`}
+        title={crop.name}
+        sub={crop.scientificName}
+        intro={crop.summary}
+        crumbs={[{ label: 'Learn', href: '/learn' }, { label: 'Crop directory', href: '/learn/crops' }, { label: crop.name }]}
+      >
+        {crop.regionalNames?.length ? (
+          <div>
+            <p className="label" style={{ fontSize: '0.75rem', color: 'var(--sun)' }}>
+              Regional names
+            </p>
+            <ul className="chip-list mt-3" style={{ gap: '0.5rem' }}>
+              {crop.regionalNames.map((n) => (
+                <li key={`${n.name}-${n.language}`} className="chip" style={{ fontSize: '1rem', padding: '0.5rem 1rem', borderWidth: 1, borderColor: 'rgb(244 237 225 / 0.35)' }}>
+                  {n.name}
+                  <span style={{ fontFamily: 'var(--font-body)', fontWeight: 400, fontSize: '0.875rem', color: 'rgb(244 237 225 / 0.8)' }}>{n.language}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        {facts.length ? (
+          <dl className="facts mt-10" style={{ maxWidth: '56rem' }}>
+            {facts.map((f) => (
+              <div key={f.label}>
+                <dt>{f.label}</dt>
+                <dd>{f.value}</dd>
               </div>
-            ) : null}
-            {facts.length ? (
-              <dl className="grid" style={{ margin: '8px 0 0', '--min': '220px', '--gap': '0 32px', borderTop: '2px solid var(--ink)' } as CSSProperties}>
-                {facts.map((f) => (
-                  <div key={f.label} style={{ padding: '14px 0', borderBottom: '1px solid var(--line)' }}>
-                    <dt className="tiny" style={{ color: 'var(--muted)', fontWeight: 500 }}>{f.label}</dt>
-                    <dd style={{ margin: '4px 0 0' }}>{f.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            ) : null}
-          </div>
-          <div style={{ flex: '0 1 420px', minWidth: 0, position: 'relative' }}>
-            <span className="sun" aria-hidden="true" style={{ top: -8, left: -20, width: 150, height: 150 }} />
-            <div style={{ position: 'relative' }}>
-              <Photo media={crop.heroImage} arch height="clamp(380px, 36vw, 520px)" priority />
-            </div>
-          </div>
-        </header>
-      </div>
+            ))}
+          </dl>
+        ) : null}
+      </PageHero>
 
-      <div style={{ background: 'var(--card)', borderTop: '1px solid var(--line)' }}>
-        <div className="container row section" style={{ alignItems: 'flex-start', gap: '48px 72px' }}>
-          <div className="stack" style={{ flex: '1 1 620px', minWidth: 0, gap: 48 }}>
+      <div className="wrap sec">
+        <div className="split split--aside">
+          <div className="stack" style={{ '--gap': '4rem', minWidth: 0 } as CSSProperties}>
+            <figure style={{ margin: 0 }} data-reveal>
+              <div style={{ position: 'relative', aspectRatio: '16 / 10', borderRadius: '2rem', overflow: 'hidden' }}>
+                <Photo media={crop.heroImage} tone={cropTone(crop)} art={cropArt(crop)} priority style={{ position: 'absolute', inset: 0 }} />
+              </div>
+              <PhotoCredit media={crop.heroImage} />
+            </figure>
+
             {crop.culturalContext ? (
               <section aria-labelledby="ctx-title">
-                <h2 id="ctx-title" className="h3" style={{ fontSize: 34, marginBottom: 14 }}>Cultural context</h2>
-                <RichText data={crop.culturalContext} />
-                {crop.communityContext ? <RichText data={crop.communityContext} /> : null}
+                <Eyebrow>History &amp; meaning</Eyebrow>
+                <h2 id="ctx-title" className="h-md mt-4">
+                  Cultural context
+                </h2>
+                <div className="prose mt-6">
+                  <RichText data={crop.culturalContext} />
+                  {crop.communityContext ? <RichText data={crop.communityContext} /> : null}
+                </div>
               </section>
             ) : null}
+
             {crop.plantingSteps?.length ? (
               <section aria-labelledby="grow-title">
-                <h2 id="grow-title" className="h3" style={{ fontSize: 34, marginBottom: 18 }}>Growing in {crop.growingZone || 'coastal BC'}</h2>
-                <ol className="grid" style={{ listStyle: 'none', margin: 0, padding: 0, '--min': '280px', '--gap': '14px' } as CSSProperties}>
+                <Eyebrow>From seed to harvest</Eyebrow>
+                <h2 id="grow-title" className="h-md mt-4">
+                  Growing in {crop.growingZone || 'coastal BC'}
+                </h2>
+                <ol className="steps steps--2 mt-8">
                   {crop.plantingSteps.map((s, i) => (
-                    <li key={s.title} className="stack" style={{ gap: 6, padding: 20, borderRadius: 18, background: 'var(--cream)' }}>
-                      <span className="tiny" style={{ color: 'var(--clay)', fontWeight: 600 }}>
-                        {String(i + 1).padStart(2, '0')} · {s.title}
-                      </span>
-                      <span>{s.body}</span>
+                    <li key={s.title}>
+                      <span className="steps__no">{pad2(i + 1)}</span>
+                      <h3 className="steps__title">{s.title}</h3>
+                      <p className="steps__body">{s.body}</p>
                     </li>
                   ))}
                 </ol>
               </section>
             ) : null}
+
             {crop.culinaryUses ? (
-              <section aria-labelledby="food-title" className="stack" style={{ gap: 14 }}>
-                <h2 id="food-title" className="h3" style={{ fontSize: 34 }}>Culinary uses</h2>
-                <p style={{ margin: 0, maxWidth: 680 }}>{crop.culinaryUses}</p>
-                <LinkArrow href="/food-and-culture#recipes">Recipes in Food &amp; Culture</LinkArrow>
+              <section aria-labelledby="food-title">
+                <Eyebrow>At the table</Eyebrow>
+                <h2 id="food-title" className="h-md mt-4">
+                  Culinary uses
+                </h2>
+                <p className="lead lead--sm mt-6 mw-xl">{crop.culinaryUses}</p>
+                <p className="mt-4">
+                  <Link href="/food-and-culture#recipes" className="link">
+                    Recipes in Food &amp; Culture →
+                  </Link>
+                </p>
               </section>
             ) : null}
+
             {crop.seedSaving ? (
-              <section aria-labelledby="save-title">
-                <h2 id="save-title" className="h3" style={{ fontSize: 34, marginBottom: 14 }}>Seed saving</h2>
-                <p style={{ margin: 0, maxWidth: 680 }}>{crop.seedSaving}</p>
+              <section aria-labelledby="save-title" className="card card--muted card--lg">
+                <Eyebrow>Keep it going</Eyebrow>
+                <h2 id="save-title" className="h-md mt-4">
+                  Seed saving
+                </h2>
+                <p className="lead lead--sm mt-5">{crop.seedSaving}</p>
               </section>
             ) : null}
+
             <SourcesList review={crop.review} />
           </div>
-          <aside aria-label="Profile details" className="stack" style={{ flex: '0 1 340px', minWidth: 0, gap: 16 }}>
+
+          <aside aria-label="Profile details" className="stack" style={{ '--gap': '1rem', position: 'sticky', top: '6.5rem' } as CSSProperties}>
             <ProvenanceCard review={crop.review} extraRows={crop.growingZone ? [{ label: 'Growing advice for', value: crop.growingZone }] : []} />
             {crop.relatedResources?.length ? (
-              <div className="card" style={{ padding: 24 }}>
-                <h2 className="tiny" style={{ margin: '0 0 10px', color: 'var(--clay)', fontWeight: 600 }}>Related in the library</h2>
-                <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+              <div className="card">
+                <h2 className="eyebrow">Related</h2>
+                <ul className="lines mt-4" style={{ border: 0 }}>
                   {crop.relatedResources.map((r) => (
                     <li key={r.id}>
-                      <Link href={`/learn/${r.slug}`} className="h4" style={{ display: 'block', padding: '8px 0', fontSize: 19, textDecoration: 'none' }}>
-                        {r.title}
+                      <Link href={`/learn/${r.slug}`} className="lines__row" style={{ paddingBlock: '0.875rem' }}>
+                        <span className="lines__title" style={{ fontSize: '1.125rem', flex: 1 }}>
+                          {r.title}
+                        </span>
+                        <Icon name="arrow-up-right" />
                       </Link>
                     </li>
                   ))}
                 </ul>
               </div>
             ) : null}
-            <Link href="/marketplace#updates" className="panel theme-soil stack" style={{ gap: 8, textDecoration: 'none', borderRadius: 22 }}>
-              <span className="pill pill--marigold" style={{ alignSelf: 'flex-start' }}>Marketplace · coming soon</span>
-              <span className="h4">Heritage {crop.name.toLowerCase()} seed</span>
-              <span className="small" style={{ color: 'rgba(244,237,225,0.85)' }}>Get notified when seeds from community growers are available.</span>
+            <Link href="/marketplace#updates" className="card card--soil grain" style={{ display: 'block' }}>
+              <span className="tag">Marketplace · coming soon</span>
+              <span className="card__title mt-4" style={{ display: 'block' }}>
+                Heritage {crop.name.toLowerCase()} seed
+              </span>
+              <span className="soft mt-2 small" style={{ display: 'block' }}>
+                Get notified when seeds from community growers are available.
+              </span>
             </Link>
           </aside>
         </div>
       </div>
 
       {others.length ? (
-        <section className="theme-paper section--tight" aria-labelledby="more-title">
-          <div className="container row" style={{ gap: '20px 40px' }}>
-            <h2 id="more-title" className="h4" style={{ fontSize: 28 }}>More from the directory</h2>
-            <ul className="row" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 10 }}>
+        <section className="on-muted sec--tight" aria-labelledby="more-title">
+          <div className="wrap row" style={{ '--gap': '1.25rem 2.5rem' } as CSSProperties}>
+            <h2 id="more-title" className="h-sm">
+              More from the directory
+            </h2>
+            <ul className="row" style={{ listStyle: 'none', margin: 0, padding: 0, '--gap': '0.625rem' } as CSSProperties}>
               {others.map((c) => (
                 <li key={c.id}>
-                  <Link href={`/learn/crops/${c.slug}`} className="btn btn--sm btn--dark">
+                  <Link href={`/learn/crops/${c.slug}`} className="filter">
                     {c.name}
                   </Link>
                 </li>
